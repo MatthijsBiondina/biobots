@@ -487,12 +487,9 @@ class AbstractCellSimulation(ABC):
         raise NotImplementedError
 
 class FreeCellSimulation(AbstractCellSimulation):
-    """
-    This uses free cells, i.e. cells that never share elements or nodes with other cells
-    """
-
     def __init__(self):
         """
+        This uses free cells, i.e. cells that never share elements or nodes with other cells
         """
         self.dt = 0.005
         self.t = 0
