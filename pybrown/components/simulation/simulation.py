@@ -55,13 +55,16 @@ class AbstractCellSimulation(ABC):
 
         self.boxes = None
 
+        self.using_boxes = True
 
+        self.write_to_file = True
 
 
 class FreeCellSimulation(AbstractCellSimulation):
     """
     This uses free cells, i.e. cells that never share elements or nodes with other cells
     """
+
     def __init__(self):
         """
         """
