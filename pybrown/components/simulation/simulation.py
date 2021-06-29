@@ -497,3 +497,14 @@ class FreeCellSimulation(AbstractCellSimulation):
         self.dt = 0.005
         self.t = 0
         self.step = 0
+
+    def make_cell_at_centre(self, N, x, y, ccm):
+        """
+
+        :param N:
+        :param x:
+        :param y:
+        :param ccm:
+        :return:
+        """
+        raise NotImplementedError
