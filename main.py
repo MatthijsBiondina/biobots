@@ -1,21 +1,8 @@
-import numpy as np
-import jupyter
-
-def hex2num(c):
-    c = c.replace('#','')
-    return np.array([int(f"0x{c[ii:ii + 2]}", 16) for ii in range(0, 6, 2)])
+from pybrown.models.polygoncellsimulation import Spheroid
 
 
-x = "#34E2E2"
-t = "#FFFFFF"
 
-x = hex2num(x)
-t = hex2num(t)
+s = Spheroid(10,10,10,5,0)
 
-alpha = 0.67
-
-y = alpha * x + (1 - alpha) * t
-
-y = '#' + ''.join([hex(int(channel)).upper()[-2:] for channel in y])
-
-print(y)
+print()
+print()

@@ -17,6 +17,82 @@ class AbstractCellSimulation(ABC):
     class will only need a constructor that assembles the cells
     """
 
+    # @property
+    # def seed(self):
+    #     return None
+    #
+    # @property
+    # def node_list(self):
+    #     return []
+    #
+    # @property
+    # def next_node_id(self):
+    #     return 0
+    #
+    # @property
+    # def element_list(self):
+    #     return []
+    #
+    # @property
+    # def next_element_id(self):
+    #     return 0
+    #
+    # @property
+    # def cell_list(self):
+    #     return []
+    #
+    # @property
+    # def next_cell_id(self):
+    #     return 0
+    #
+    # @property
+    # def stochastic_jiggle(self):
+    #     return True
+    #
+    # @property
+    # def epsilon(self):
+    #     return 0.0001
+    #
+    # @property
+    # def cell_based_forces(self) -> AbstractCellBasedForce:
+    #     return None
+    #
+    # @property
+    # def element_based_forces(self) -> AbstractElementBasedForce:
+    #     return None
+    #
+    # @property
+    # def neighbourhood_based_forces(self) -> AbstractNeighbourhoodBasedForce:
+    #     return None
+    #
+    #
+    # self.neighbourhood_based_forces: AbstractNeighbourhoodBasedForce = None
+    # self.tissue_based_forces: AbstractTissueBasedForce = None
+    #
+    # self.stopping_conditions: AbstractStoppingCondition = None
+    #
+    # self.stopped = False
+    #
+    # self.tissue_level_killers: AbstractTissueLevelCellKiller = None
+    # self.cell_killers: AbstractCellKiller = None
+    #
+    # self.simulation_modifiers: AbstractSimulationModifier = None
+    #
+    # # A collection of objects that store data over multiple time steps with also the
+    # # potential to write to file
+    # self.data_stores: AbstractDataStore = None
+    # self.data_writers: AbstractDataWriter = None
+    #
+    # # A collection of objects for calculating data about the simulation stored in a map
+    # # container so each type of data can be given a meaningful name
+    # self.sim_data = {}
+    #
+    # self.boxes = None
+    #
+    # self.using_boxes = True
+    #
+    # self.write_to_file = True
+
     def __init__(self):
         self.seed = None
         self.node_list = []
@@ -58,6 +134,8 @@ class AbstractCellSimulation(ABC):
         self.using_boxes = True
 
         self.write_to_file = True
+
+        super().__init__()
 
     @property
     @abstractmethod
@@ -486,14 +564,41 @@ class AbstractCellSimulation(ABC):
         """
         raise NotImplementedError
 
+
 class FreeCellSimulation(AbstractCellSimulation):
+
+
     def __init__(self):
         """
         This uses free cells, i.e. cells that never share elements or nodes with other cells
         """
-        self.dt = 0.005
-        self.t = 0
-        self.step = 0
+        self._dt = 0.005
+        self._t = 0
+        self._step = 0
+
+    @property
+    def dt(self):
+        return self._dt
+
+    @dt.setter
+    def dt(self, value):
+        self._dt = value
+
+    @property
+    def t(self):
+        return self._t
+
+    @t.setter
+    def t(self, value):
+        self._t = value
+
+    @property
+    def step(self):
+        return self._step
+
+    @step.setter
+    def step(self, value):
+        self._step = value
 
     def make_cell_at_centre(self, N, x, y, ccm):
         """
