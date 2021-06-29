@@ -1,6 +1,8 @@
 import random
 from abc import ABC, abstractmethod
 
+from pybrown.components.cell.cell import ColourSet
+
 
 class AbstractCellCycleModel(ABC):
     def __init__(self):
