@@ -34,7 +34,7 @@ class ColourSet:
         :param c:
         :return:
         """
-        raise NotImplementedError
+        return self.name_to_num[c]
 
 
 

@@ -22,7 +22,7 @@ class SpacePartition:
     processing the simulation will call
     """
 
-    def __init__(self):
+    def __init__(self, dx, dy, t):
         # Each quadrant is part of the cartesian plane
         # 1: (+,+)
         # 2: (+,-)
@@ -40,7 +40,8 @@ class SpacePartition:
         # simulation progresses. This could cause issues as the simulation gets large.
 
         # The lengths of the box edges
-        self.dx, self.dy = None, None
+        self.dx, self.dy = dx, dy
+        self.simulation = t
 
         # A flag stating if the partition will search only the boxes that a node is in or close
         # to, rather than all 8 surrounding boxes. For small dx,dy in comparision to the average
@@ -50,8 +51,14 @@ class SpacePartition:
 
         self.only_boxes_in_proximity = True
 
-    def space_partition(self, dx, dy, t):
-        raise NotImplementedError
+        for i in range(len(t.node_list)):
+            self.put_node_in_boxes(t.node_list[i])
+
+        for i in range(len(t.element_list)):
+            # If the element is an internal element, skip it because they don't interact with nodes
+            e = t.element_list[i]
+            if not e.is_element_internal():
+                self.put_element_in_boxes(e)
 
     def get_neighbouring_elements(self, n, r):
         """
@@ -136,7 +143,15 @@ class SpacePartition:
         """
         raise NotImplementedError
 
-    def put_node_in_boxes(self, e):
+    def put_node_in_box(self, n):
+        """
+
+        :param n:
+        :return:
+        """
+        raise NotImplementedError
+
+    def put_element_in_boxes(self, e):
         """
         Given the list of elements that a given node is part of, distribute the elements to the
         element boxes. This will require putting elements in intermediate boxes too.

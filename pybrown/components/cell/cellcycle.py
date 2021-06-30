@@ -52,7 +52,7 @@ class AbstractCellCycleModel(ABC):
         :param age:
         :return:
         """
-        raise NotImplementedError
+        self.age = age
 
     def age_cell_cycle(self, dt):
         """
@@ -79,6 +79,7 @@ class GrowthContactInhibition(AbstractCellCycleModel):
         :param f:
         :param dt:
         """
+        super().__init__()
 
         # properties
         self.mean_pause_phase_duration = None
@@ -109,7 +110,7 @@ class GrowthContactInhibition(AbstractCellCycleModel):
         self.dt = dt
 
         # By default cell will start off in the pause phase
-        self.set_age(round(random.uniform(0, self.pause_phase_duration()), 1))
+        self.set_age(round(random.uniform(0, self.pause_phase_duration), 1))
 
         self.pause_colour = self.colour_set.get_number('PAUSE')
         self.growth_colour = self.colour_set.get_number('GROW')
@@ -150,7 +151,14 @@ class GrowthContactInhibition(AbstractCellCycleModel):
         :param p:
         :return:
         """
-        raise NotImplementedError
+        self.mean_pause_phase_duration = p
+
+        p = p + self.pause_phase_rng()
+
+        if p < self.minimum_pause_phase_duration:
+            p = self.minimum_pause_phase_duration
+
+        self.pause_phase_duration = p
 
     def set_growth_phase_duration(self, g):
         """
@@ -158,7 +166,14 @@ class GrowthContactInhibition(AbstractCellCycleModel):
         :param g:
         :return:
         """
-        raise NotImplementedError
+        self.mean_growth_phase_duration = g
+
+        g = g + self.growth_phase_rng()
+
+        if g < self.minimum_growth_phase_duration:
+            g = self.minimum_growth_phase_duration
+
+        self.growth_phase_duration = g
 
     def set_pause_phase_rng(self, func):
         """

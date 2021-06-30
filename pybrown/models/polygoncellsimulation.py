@@ -1,5 +1,11 @@
 from pybrown.components.cell.cellcycle import GrowthContactInhibition
+from pybrown.components.forces.cellbasedforce import PolygonCellGrowthForce, \
+    FreeCellPerimeterNormalisingForce
+from pybrown.components.forces.neighbourhoodbasedforce import CellCellInteractionForce
+from pybrown.components.simulation.datawriter import WriteSpatialState
 from pybrown.components.simulation.simulation import FreeCellSimulation
+from pybrown.components.simulation.simulationdata import SpatialState
+from pybrown.components.spacepartition import SpacePartition
 
 
 class Spheroid(FreeCellSimulation):
@@ -55,9 +61,24 @@ class Spheroid(FreeCellSimulation):
             self.element_list = [self.element_list, self.element_list]
             self.cell_list = [self.cell_list, c]
 
-
+        """ ADD THE FORCES """
 
         # Cell growth force
-        self.add_cell_based_force(PolygonCellGrowthForce(area_energy, perimeter_energy, tension_energy))
+        self.add_cell_based_force(PolygonCellGrowthForce(area_energy, perimeter_energy,
+                                                         tension_energy))
 
+        # Node-Element interaction force - requires a SpacePartition
+        self.add_neighbourhood_based_force(CellCellInteractionForce(s,s,dAsym, dSep, dLim,
+                                                                    self.dt, True))
 
+        # Tries to make the edges the same length
+        self.add_cell_based_force(FreeCellPerimeterNormalisingForce(sreg))
+
+        """ ADD SPACE PARTITION """
+        self.boxes = SpacePartition(0.3, 0.3, self)
+
+        """ ADD THE DATA WRITERS """
+        path_name = f"Spheroid/t0{t0}gtg{tg}gs{s}gsreg{sreg}gf{f}gda{dAsym}gds{dSep}gdl{dLim}" \
+                    f"ga{area_energy}gb{perimeter_energy}gt{tension_energy}g_seed{seed}g/"
+        self.add_simulation_data(SpatialState())
+        self.add_data_writer(WriteSpatialState(20, path_name))

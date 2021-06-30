@@ -1,99 +1,31 @@
+import random
 from abc import ABC, abstractmethod
+
+import numpy.random
+import torch
 
 from pybrown.components.cell.celldeath import AbstractTissueLevelCellKiller, AbstractCellKiller
 from pybrown.components.forces.cellbasedforce import AbstractCellBasedForce
 from pybrown.components.forces.elementbasedforce import AbstractElementBasedForce
 from pybrown.components.forces.neighbourhoodbasedforce import AbstractNeighbourhoodBasedForce
 from pybrown.components.forces.tissuebasedforce import AbstractTissueBasedForce
+from pybrown.components.node.node import Node
 from pybrown.components.simulation.datastore import AbstractDataStore
 from pybrown.components.simulation.datawriter import AbstractDataWriter
 from pybrown.components.simulation.modifiers import AbstractSimulationModifier
 from pybrown.components.simulation.stopping import AbstractStoppingCondition
+# from pybrown.utils.cantrips import ts
+from pybrown.utils.cantrips import as_numpy
+from pybrown.utils.polyshapes import nsidedpoly
 
 
 class AbstractCellSimulation(ABC):
-    """
-    A parent class that contains all the functions for running a simulation. The child/concrete
-    class will only need a constructor that assembles the cells
-    """
-
-    # @property
-    # def seed(self):
-    #     return None
-    #
-    # @property
-    # def node_list(self):
-    #     return []
-    #
-    # @property
-    # def next_node_id(self):
-    #     return 0
-    #
-    # @property
-    # def element_list(self):
-    #     return []
-    #
-    # @property
-    # def next_element_id(self):
-    #     return 0
-    #
-    # @property
-    # def cell_list(self):
-    #     return []
-    #
-    # @property
-    # def next_cell_id(self):
-    #     return 0
-    #
-    # @property
-    # def stochastic_jiggle(self):
-    #     return True
-    #
-    # @property
-    # def epsilon(self):
-    #     return 0.0001
-    #
-    # @property
-    # def cell_based_forces(self) -> AbstractCellBasedForce:
-    #     return None
-    #
-    # @property
-    # def element_based_forces(self) -> AbstractElementBasedForce:
-    #     return None
-    #
-    # @property
-    # def neighbourhood_based_forces(self) -> AbstractNeighbourhoodBasedForce:
-    #     return None
-    #
-    #
-    # self.neighbourhood_based_forces: AbstractNeighbourhoodBasedForce = None
-    # self.tissue_based_forces: AbstractTissueBasedForce = None
-    #
-    # self.stopping_conditions: AbstractStoppingCondition = None
-    #
-    # self.stopped = False
-    #
-    # self.tissue_level_killers: AbstractTissueLevelCellKiller = None
-    # self.cell_killers: AbstractCellKiller = None
-    #
-    # self.simulation_modifiers: AbstractSimulationModifier = None
-    #
-    # # A collection of objects that store data over multiple time steps with also the
-    # # potential to write to file
-    # self.data_stores: AbstractDataStore = None
-    # self.data_writers: AbstractDataWriter = None
-    #
-    # # A collection of objects for calculating data about the simulation stored in a map
-    # # container so each type of data can be given a meaningful name
-    # self.sim_data = {}
-    #
-    # self.boxes = None
-    #
-    # self.using_boxes = True
-    #
-    # self.write_to_file = True
 
     def __init__(self):
+        """
+        A parent class that contains all the functions for running a simulation. The child/concrete
+        class will only need a constructor that assembles the cells
+        """
         self.seed = None
         self.node_list = []
         self.next_node_id = 0
@@ -158,7 +90,11 @@ class AbstractCellSimulation(ABC):
         :param seed:
         :return:
         """
-        raise NotImplementedError
+        self.seed = seed
+
+        random.seed(seed)
+        numpy.random.seed(seed)
+        torch.manual_seed(seed)
 
     def next_time_step(self):
         """
@@ -609,4 +545,13 @@ class FreeCellSimulation(AbstractCellSimulation):
         :param ccm:
         :return:
         """
+
+        v = nsidedpoly(N, 'radius', 0.5).vertices
+
+        nodes = []
+        for ii in range(N):
+            nodes.append(Node(v[ii,0] + x, v[ii,1] + y, self._get_next_node_id()))
+
+        print()
+        print()
         raise NotImplementedError
