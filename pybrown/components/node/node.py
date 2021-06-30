@@ -108,3 +108,6 @@ class Node:
         :return:
         """
         raise TodoException
+
+if __name__ == '__main__':
+    print("foo")

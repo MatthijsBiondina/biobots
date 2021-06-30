@@ -101,3 +101,7 @@ class ElementNeighbours(AbstractCellData):
         :return:
         """
         raise TodoException
+
+
+if __name__ == '__main__':
+    print("nodedata.py")

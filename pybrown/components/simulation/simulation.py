@@ -16,6 +16,7 @@ from pybrown.components.simulation.modifiers import AbstractSimulationModifier
 from pybrown.components.simulation.stopping import AbstractStoppingCondition
 # from pybrown.utils.cantrips import ts
 from pybrown.utils.cantrips import as_numpy
+from pybrown.utils.errors import TodoException
 from pybrown.utils.polyshapes import nsidedpoly
 
 
@@ -101,7 +102,7 @@ class AbstractCellSimulation(ABC):
         Updates all the forces and applies the movements
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def n_time_steps(self, n):
         """
@@ -109,7 +110,7 @@ class AbstractCellSimulation(ABC):
         :param n:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def run_to_time(self, t):
         """
@@ -117,42 +118,42 @@ class AbstractCellSimulation(ABC):
         :param t:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def generate_tissue_based_forces(self):
         """
 
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def generate_cell_based_forces(self):
         """
 
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def generate_element_based_forces(self):
         """
 
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def generate_neighbourhood_based_forces(self):
         """
 
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def make_nodes_move(self):
         """
 
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def adjust_node_position(self, n, new_pos):
         """
@@ -166,14 +167,14 @@ class AbstractCellSimulation(ABC):
         :param new_pos:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def make_cells_divide(self):
         """
         Call the divide process, and update the lists
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def add_new_cells(self, new_cells, new_elements, new_nodes):
         """
@@ -184,14 +185,14 @@ class AbstractCellSimulation(ABC):
         :param new_nodes:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def make_cells_age(self):
         """
 
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def add_cell_based_force(self, f):
         """
@@ -199,7 +200,7 @@ class AbstractCellSimulation(ABC):
         :param f:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def add_element_based_force(self, f):
         """
@@ -207,7 +208,7 @@ class AbstractCellSimulation(ABC):
         :param f:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def add_neighbourhood_based_force(self, f):
         """
@@ -215,7 +216,7 @@ class AbstractCellSimulation(ABC):
         :param f:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def add_tissue_based_force(self, f):
         """
@@ -223,7 +224,7 @@ class AbstractCellSimulation(ABC):
         :param f:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def add_tissue_level_killer(self, k):
         """
@@ -231,7 +232,7 @@ class AbstractCellSimulation(ABC):
         :param k:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def add_cell_killer(self, k):
         """
@@ -239,7 +240,7 @@ class AbstractCellSimulation(ABC):
         :param k:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def add_stopping_condition(self, s):
         """
@@ -247,7 +248,7 @@ class AbstractCellSimulation(ABC):
         :param s:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def add_simulation_modifier(self, m):
         """
@@ -255,7 +256,7 @@ class AbstractCellSimulation(ABC):
         :param m:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def add_data_store(self, d):
         """
@@ -263,7 +264,7 @@ class AbstractCellSimulation(ABC):
         :param d:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def add_data_writer(self, w):
         """
@@ -271,7 +272,7 @@ class AbstractCellSimulation(ABC):
         :param w:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def add_simulation_data(self, d):
         """
@@ -279,28 +280,28 @@ class AbstractCellSimulation(ABC):
         :param d:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def store_data(self):
         """
 
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def write_data(self):
         """
 
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def modify_simulation_state(self):
         """
 
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def kill_cells(self):
         """
@@ -311,7 +312,7 @@ class AbstractCellSimulation(ABC):
         DynamicLayer is done take some time to fix this up for SquareCellJoined
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def process_cells_to_remove(self, kill_list):
         """
@@ -319,35 +320,35 @@ class AbstractCellSimulation(ABC):
         :param kill_list:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def is_stopping_condition_met(self):
         """
 
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def get_num_cells(self):
         """
 
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def get_num_elements(self):
         """
 
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def get_num_nodes(self):
         """
 
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def visualise(self, varargin):
         """
@@ -355,14 +356,14 @@ class AbstractCellSimulation(ABC):
         :param varargin:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def visualise_area(self):
         """
 
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def visualise_rods(self, r):
         """
@@ -370,7 +371,7 @@ class AbstractCellSimulation(ABC):
         :param r:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def visualise_nodes(self, r):
         """
@@ -378,7 +379,7 @@ class AbstractCellSimulation(ABC):
         :param r: cell radius
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def visualise_nodes_and_edges(self, r):
         """
@@ -386,7 +387,7 @@ class AbstractCellSimulation(ABC):
         :param r: cell radius
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def visualise_wire_frame(self, varargin):
         """
@@ -394,7 +395,7 @@ class AbstractCellSimulation(ABC):
         :param varargin:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def visualise_wire_frame_previous(self, varargin):
         """
@@ -411,7 +412,7 @@ class AbstractCellSimulation(ABC):
         :param sm:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def animate_wire_frame(self, n, sm):
         """
@@ -421,7 +422,7 @@ class AbstractCellSimulation(ABC):
         :param sm:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def animate_rods(self, n, sm, r):
         """
@@ -431,7 +432,7 @@ class AbstractCellSimulation(ABC):
         :param r:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def animate_nodes(self, n, sm, r):
         """
@@ -441,7 +442,7 @@ class AbstractCellSimulation(ABC):
         :param r:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def animate_nodes_and_edges(self, n, sm, r):
         """
@@ -451,7 +452,7 @@ class AbstractCellSimulation(ABC):
         :param r:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def draw_pill(self, a, b, r):
         """
@@ -461,28 +462,30 @@ class AbstractCellSimulation(ABC):
         :param r: radius
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def _get_next_node_id(self):
         """
 
         :return:
         """
-        raise NotImplementedError
+        yield self.next_node_id
+        self.next_node_id += 1
+        # raise TodoException
 
     def _get_next_element_id(self):
         """
 
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def _get_next_cell_id(self):
         """
 
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def _add_nodes_to_list(self, list_of_nodes):
         """
@@ -490,7 +493,7 @@ class AbstractCellSimulation(ABC):
         :param list_of_nodes:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def _add_elements_to_list(self, list_of_elements):
         """
@@ -498,11 +501,10 @@ class AbstractCellSimulation(ABC):
         :param list_of_elements:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
 
 class FreeCellSimulation(AbstractCellSimulation):
-
 
     def __init__(self):
         """
@@ -550,8 +552,8 @@ class FreeCellSimulation(AbstractCellSimulation):
 
         nodes = []
         for ii in range(N):
-            nodes.append(Node(v[ii,0] + x, v[ii,1] + y, self._get_next_node_id()))
+            nodes.append(Node(v[ii, 0] + x, v[ii, 1] + y, self._get_next_node_id()))
 
         print()
         print()
-        raise NotImplementedError
+        raise TodoException
