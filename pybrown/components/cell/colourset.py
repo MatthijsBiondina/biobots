@@ -1,4 +1,10 @@
+import torch
+
+from pybrown.utils.config import processor
+
+
 class ColourSet:
+    DEVICE = torch.device(processor)
     def __init__(self):
         """
         The colours for rendering cells
@@ -16,6 +22,9 @@ class ColourSet:
                            'ECOLI': [0.7578, 0.8633, 0.3359],
                            'ECOLISTOPPED': [0.4180, 0.5000, 0.0977],
                            'DIFFERENTIATED': [0.9375, 0.8945, 0.8750]}
+
+        self.colour_map = {key: torch.tensor(value, device=self.DEVICE)
+                           for key, value in self.colour_map.items()}
 
         self.name_to_num = {key: value for value, key in enumerate(list(self.colour_map.keys()))}
         self.num_to_name = {value: key for key, value in self.name_to_num.items()}
@@ -35,6 +44,3 @@ class ColourSet:
         :return:
         """
         return self.name_to_num[c]
-
-
-

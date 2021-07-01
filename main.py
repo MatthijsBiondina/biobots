@@ -1,8 +1,6 @@
-from pybrown.models.polygoncellsimulation import Spheroid
+from pybrown.models.polygoncellsimulation.spheroid import Spheroid
 
-
-
-s = Spheroid(10,10,10,5,0)
+s = Spheroid(10, 10, 10, 5, 0)
 
 print()
 print()

@@ -1,10 +1,12 @@
-from pybrown.components.cell.cellcycle import GrowthContactInhibition
-from pybrown.components.forces.cellbasedforce import PolygonCellGrowthForce, \
+from pybrown.components.cell.cellcycle.contactinhibitioncellcycle import GrowthContactInhibition
+from pybrown.components.forces.cellbasedforce.freecellperimeternormalisingforce import \
     FreeCellPerimeterNormalisingForce
-from pybrown.components.forces.neighbourhoodbasedforce import CellCellInteractionForce
-from pybrown.components.simulation.datawriter import WriteSpatialState
-from pybrown.components.simulation.simulation import FreeCellSimulation
-from pybrown.components.simulation.simulationdata import SpatialState
+from pybrown.components.forces.cellbasedforce.polygoncellgrowthforce import PolygonCellGrowthForce
+from pybrown.components.forces.neighbourhoodbasedforce.cellcellinteractionforce import \
+    CellCellInteractionForce
+from pybrown.components.simulation.datawriter.writespatialstate import WriteSpatialState
+from pybrown.components.simulation.freecellsimulation import FreeCellSimulation
+from pybrown.components.simulation.simulationdata.spatialstate import SpatialState
 from pybrown.components.spacepartition import SpacePartition
 
 
@@ -18,7 +20,7 @@ class Spheroid(FreeCellSimulation):
         """
         Object input parameters can be chosen as desired. These are the most useful ones for
         tuning behaviour and running tests
-        
+
         :param t0: the pause phase duration
         :param tg: the growth phase duration
         :param s: the cell-cell interaction force law parameter used for both adhesion and repulsion
@@ -68,7 +70,7 @@ class Spheroid(FreeCellSimulation):
                                                          tension_energy))
 
         # Node-Element interaction force - requires a SpacePartition
-        self.add_neighbourhood_based_force(CellCellInteractionForce(s,s,dAsym, dSep, dLim,
+        self.add_neighbourhood_based_force(CellCellInteractionForce(s, s, dAsym, dSep, dLim,
                                                                     self.dt, True))
 
         # Tries to make the edges the same length

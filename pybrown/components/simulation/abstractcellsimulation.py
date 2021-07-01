@@ -1,23 +1,26 @@
 import random
-from abc import ABC, abstractmethod
+from abc import abstractmethod, ABC
 
-import numpy.random
+import numpy
 import torch
 
-from pybrown.components.cell.celldeath import AbstractTissueLevelCellKiller, AbstractCellKiller
-from pybrown.components.forces.cellbasedforce import AbstractCellBasedForce
-from pybrown.components.forces.elementbasedforce import AbstractElementBasedForce
-from pybrown.components.forces.neighbourhoodbasedforce import AbstractNeighbourhoodBasedForce
-from pybrown.components.forces.tissuebasedforce import AbstractTissueBasedForce
-from pybrown.components.node.node import Node
-from pybrown.components.simulation.datastore import AbstractDataStore
-from pybrown.components.simulation.datawriter import AbstractDataWriter
-from pybrown.components.simulation.modifiers import AbstractSimulationModifier
-from pybrown.components.simulation.stopping import AbstractStoppingCondition
-# from pybrown.utils.cantrips import ts
-from pybrown.utils.cantrips import as_numpy
+from pybrown.components.cell.celldeath.abstractcellkiller import AbstractCellKiller
+from pybrown.components.cell.celldeath.abstracttissuelevelcellkiller import \
+    AbstractTissueLevelCellKiller
+from pybrown.components.forces.cellbasedforce.abstractcellbasedforce import AbstractCellBasedForce
+from pybrown.components.forces.elementbasedforce.abstractelementbasedforce import \
+    AbstractElementBasedForce
+from pybrown.components.forces.neighbourhoodbasedforce.abstractneighbourhoodbasedforce import \
+    AbstractNeighbourhoodBasedForce
+from pybrown.components.forces.tissuebasedforce.abstracttissuebasedforce import \
+    AbstractTissueBasedForce
+from pybrown.components.simulation.datastore.abstractdatastore import AbstractDataStore
+from pybrown.components.simulation.datawriter.abstractdatawriter import AbstractDataWriter
+from pybrown.components.simulation.modifiers.abstractsimulationmodifier import \
+    AbstractSimulationModifier
+from pybrown.components.simulation.stopping.abstractstoppingcondition import \
+    AbstractStoppingCondition
 from pybrown.utils.errors import TodoException
-from pybrown.utils.polyshapes import nsidedpoly
 
 
 class AbstractCellSimulation(ABC):
@@ -501,59 +504,4 @@ class AbstractCellSimulation(ABC):
         :param list_of_elements:
         :return:
         """
-        raise TodoException
-
-
-class FreeCellSimulation(AbstractCellSimulation):
-
-    def __init__(self):
-        """
-        This uses free cells, i.e. cells that never share elements or nodes with other cells
-        """
-        self._dt = 0.005
-        self._t = 0
-        self._step = 0
-
-    @property
-    def dt(self):
-        return self._dt
-
-    @dt.setter
-    def dt(self, value):
-        self._dt = value
-
-    @property
-    def t(self):
-        return self._t
-
-    @t.setter
-    def t(self, value):
-        self._t = value
-
-    @property
-    def step(self):
-        return self._step
-
-    @step.setter
-    def step(self, value):
-        self._step = value
-
-    def make_cell_at_centre(self, N, x, y, ccm):
-        """
-
-        :param N:
-        :param x:
-        :param y:
-        :param ccm:
-        :return:
-        """
-
-        v = nsidedpoly(N, 'radius', 0.5).vertices
-
-        nodes = []
-        for ii in range(N):
-            nodes.append(Node(v[ii, 0] + x, v[ii, 1] + y, self._get_next_node_id()))
-
-        print()
-        print()
         raise TodoException

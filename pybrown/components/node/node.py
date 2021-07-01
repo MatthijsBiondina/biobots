@@ -1,6 +1,5 @@
 import torch
 
-from pybrown.components.node.nodedata import ElementNeighbours
 from pybrown.utils.errors import TodoException
 
 

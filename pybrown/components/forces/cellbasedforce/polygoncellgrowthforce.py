@@ -1,15 +1,4 @@
-from abc import ABC, abstractmethod
-
-
-class AbstractCellBasedForce(ABC):
-    """
-    This class gives the details for how a force will be applied to each cell (as opposed to each
-    element, or the whole population)
-    """
-
-    @abstractmethod
-    def add_cell_based_forces(self, cell_list: list):
-        pass
+from pybrown.components.forces.cellbasedforce.abstractcellbasedforce import AbstractCellBasedForce
 
 
 class PolygonCellGrowthForce(AbstractCellBasedForce):
@@ -106,32 +95,6 @@ class PolygonCellGrowthForce(AbstractCellBasedForce):
 
         Technically this can be separated out as an AbstractElementBasedForce, but it is kept
         here since it is part of the "Nagai-Honda" model of a cell.
-        :param c:
-        :return:
-        """
-        raise NotImplementedError
-
-
-class FreeCellPerimeterNormalisingForce(AbstractCellBasedForce):
-    def __init__(self, spring_rate):
-        """
-        A normalising force to keep the edges around a free cell roughly the same size. It will
-        push each edge to have length P/N, where P is the current perimeter and N the number of
-        edges
-        """
-        self.spring_rate = spring_rate
-
-    def add_cell_based_forces(self, cell_list: list):
-        """
-        For each cell in the list, calculate the forces and add them to the nodes
-        :param cell_list:
-        :return:
-        """
-        raise NotImplementedError
-
-    def apply_spring_force(self, c):
-        """
-
         :param c:
         :return:
         """
