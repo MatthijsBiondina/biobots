@@ -1,3 +1,5 @@
+import warnings
+
 import torch
 
 from src.components.node.nodedata.elementneighbours import ElementNeighbours
@@ -59,7 +61,11 @@ class Node:
         raise TodoException
 
     def add_element(self, e):
-        raise TodoException
+        if e in self.element_list:
+            warnings.warn(f"Adding an element that already appears in element_list for node "
+                          f"{self.id}. This has not been added.")
+        else:
+            self.element_list.append(e)
 
     def remove_element(self, e):
         raise TodoException

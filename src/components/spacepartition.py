@@ -1,3 +1,14 @@
+from math import floor
+
+import torch
+from torch import Tensor
+
+from src.components.cell.element import Element
+from src.components.node.node import Node
+from src.utils.cantrips import as_numpy
+from src.utils.errors import TodoException
+
+
 class SpacePartition:
     """
     This class holds a space partition for all the nodes in a simulation. It distributes each
@@ -52,7 +63,7 @@ class SpacePartition:
         self.only_boxes_in_proximity = True
 
         for i in range(len(t.node_list)):
-            self.put_node_in_boxes(t.node_list[i])
+            self.put_node_in_box(t.node_list[i])
 
         for i in range(len(t.element_list)):
             # If the element is an internal element, skip it because they don't interact with nodes
@@ -77,7 +88,7 @@ class SpacePartition:
         :param r: radius
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def get_neighbouring_nodes(self, nl, r):
         """
@@ -86,7 +97,7 @@ class SpacePartition:
         :param r:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def get_neighbouring_nodes_and_elements(self, n, r):
         """
@@ -99,7 +110,7 @@ class SpacePartition:
         :param r:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def get_all_adjacent_element_boxes(self, n):
         """
@@ -107,7 +118,7 @@ class SpacePartition:
         :param n:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def get_all_adjacent_node_boxes(self, n):
         """
@@ -115,7 +126,7 @@ class SpacePartition:
         :param n:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def assemble_candidate_elements(self, n, r):
         """
@@ -124,7 +135,7 @@ class SpacePartition:
         :param r:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def assemble_candidate_nodes(self, n, r):
         """
@@ -133,7 +144,7 @@ class SpacePartition:
         :param r:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def quick_unique(self, b):
         """
@@ -141,7 +152,7 @@ class SpacePartition:
         :param b:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def put_node_in_box(self, n):
         """
@@ -149,16 +160,24 @@ class SpacePartition:
         :param n:
         :return:
         """
-        raise NotImplementedError
 
-    def put_element_in_boxes(self, e):
+        q, i, j = self.get_quadrant_and_indices(n.x, n.y)
+
+        return q, i, j
+
+    def put_element_in_boxes(self, e: Element):
         """
         Given the list of elements that a given node is part of, distribute the elements to the
         element boxes. This will require putting elements in intermediate boxes too.
         :param e:
         :return:
         """
-        raise NotImplementedError
+        n1 = e.node_1
+        n2 = e.node_2
+
+        Q, I, J = self.get_box_indices_between_nodes(n1, n2)
+
+        raise TodoException
 
     def get_node_box_from_node(self, n):
         """
@@ -166,7 +185,7 @@ class SpacePartition:
         :param n:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def get_element_box_from_node(self, n):
         """
@@ -174,7 +193,7 @@ class SpacePartition:
         :param n:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def get_adjacent_indices_from_node(self, n, direction):
         """
@@ -185,7 +204,7 @@ class SpacePartition:
                           a is applied to I and b is applied to J
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def get_adjacent_node_box_from_node(self, n, direction):
         """
@@ -194,7 +213,7 @@ class SpacePartition:
         :param direction:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def get_adjacent_element_box_from_node(self, n, direction):
         """
@@ -203,9 +222,9 @@ class SpacePartition:
         :param direction:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
-    def get_box_indices_between_points(self, pos1, pos2):
+    def get_box_indices_between_points(self, pos1: Tensor, pos2: Tensor):
         """
         Given two points, we want all the indices between them in order to determine which boxes
         an element needs to go in
@@ -213,16 +232,25 @@ class SpacePartition:
         :param pos2:
         :return:
         """
-        raise NotImplementedError
 
-    def get_box_indices_between_nodes(self, n1, n2):
+        q1, i1, j1 = self.get_quadrant_and_indices(pos1[0], pos1[1])
+        q2, i2, j2 = self.get_quadrant_and_indices(pos2[0], pos2[1])
+
+        qp, ip, jp = self.make_element_box_list(q1, i1, j1, q2, i2, j2)
+
+        raise TodoException
+
+    def get_box_indices_between_nodes(self, n1: Node, n2: Node):
         """
         Given two nodes, we want all the indices between them
         :param n1:
         :param n2:
         :return:
         """
-        raise NotImplementedError
+
+        ql, il, jl = self.get_box_indices_between_points(n1.position, n2.position)
+
+        raise TodoException
 
     def get_box_indices_between_nodes_previous(self, n1, n2):
         """
@@ -233,7 +261,7 @@ class SpacePartition:
         :param n2:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def get_box_indices_between_nodes_previous_current(self, n1, n2):
         """
@@ -242,7 +270,7 @@ class SpacePartition:
         :param n2:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def make_element_box_list(self, q1, i1, j1, q2, i2, j2):
         """
@@ -261,8 +289,6 @@ class SpacePartition:
         in a small box case, but is quick, and arrives at the same answer when the boxes are the
         large, hence it is kept for now.
 
-        To find the boxes that the element could pass through it is much simpler to convert to
-        global indices, then back to quadrants.
         :param q1:
         :param i1:
         :param j1:
@@ -271,7 +297,28 @@ class SpacePartition:
         :param j2:
         :return:
         """
-        raise NotImplementedError
+
+        # To find the boxes that the element could pass through it is much simpler to convert to
+        # global indices, then back to quadrants.
+        # I1, J1 = self.convert_to_global(q1, i1, j1)
+        # I2, J2 = self.convert_to_global(q2, i2, j2)
+        #
+        # Il = torch.tensor(range(I1, I2 + 1) if I1 < I2 else range(I2, I1 + 1))
+        # Jl = torch.tensor(range(J1, J2 + 1) if J1 < J2 else range(J2, J1 + 1))
+
+        # todo: this does not work yet
+        # since MATLAB indexes from 1 instead of 0, I think conversion to global should take this
+        # into account
+
+        # MATLAB                                 PYTHON
+        #         (-1, 2) | ( 1,  2)                      (-1,  1) | ( 0,  1)
+        # (-2, 1) (-1, 1) | ( 1,  1) (2,  1)     (-2,  0) (-1,  0) | ( 0,  0) ( 1,  0)
+        # ----------------+-----------------     ------------------+------------------
+        # (-2,-1) (-1,-1) | ( 1, -1) (2, -1)     (-2, -1) (-1, -1) | ( 0, -1) ( 1, -1)
+        #         (-1,-2) | ( 1, -2)                      (-1, -2) | ( 0, -2)
+
+
+        raise TodoException
 
     def update_box_for_node(self, n):
         """
@@ -279,7 +326,7 @@ class SpacePartition:
         :param n:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def update_box_for_node_adjusted(self, n):
         """
@@ -288,7 +335,7 @@ class SpacePartition:
         :param n:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def update_boxes_for_elements_using_node(self, n1):
         """
@@ -306,7 +353,7 @@ class SpacePartition:
         :param n1:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def update_boxes_for_elements_using_node_adjusted(self, n1):
         """
@@ -315,7 +362,7 @@ class SpacePartition:
         :param n1:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def update_boxes_for_element(self, e):
         """
@@ -323,7 +370,7 @@ class SpacePartition:
         :param e:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def move_element_to_new_boxes(self, old, new, e):
         """
@@ -333,7 +380,7 @@ class SpacePartition:
         :param e:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def insert_node(self, q, i, j, n):
         """
@@ -349,7 +396,7 @@ class SpacePartition:
         :param n:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def insert_element(self, q, i, j, e):
         """
@@ -360,7 +407,7 @@ class SpacePartition:
         :param e:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def remove_element_from_box(self, q, i, j, e):
         """
@@ -372,7 +419,7 @@ class SpacePartition:
         :param e:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def remove_node_from_partition(self, n):
         """
@@ -380,7 +427,7 @@ class SpacePartition:
         :param n:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def remove_element_from_partition(self, e):
         """
@@ -388,7 +435,7 @@ class SpacePartition:
         :param e:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def repair_modified_element(self, e):
         """
@@ -396,7 +443,7 @@ class SpacePartition:
         :param e:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def get_node_box(self, x, y):
         """
@@ -405,7 +452,7 @@ class SpacePartition:
         :param y:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def is_node_in_new_box(self, n):
         """
@@ -413,7 +460,7 @@ class SpacePartition:
         :param n:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def get_element_box(self, x, y):
         """
@@ -422,16 +469,21 @@ class SpacePartition:
         :param y:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def get_quadrant_and_indices(self, x, y):
         """
-
+        N.B. this returns different number than MATLAB implementation, because python is a
+        sensible language that counts from 0 ¯\_(ツ)_/¯
         :param x:
         :param y:
         :return:
         """
-        raise NotImplementedError
+
+        q = self.get_quadrant(x, y)
+        i, j = self.get_indices(x, y)
+
+        return q, i, j
 
     def get_global_indices(self, x, y):
         """
@@ -442,9 +494,9 @@ class SpacePartition:
         :param y:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
-    def convert_to_global(self, q, i, j):
+    def convert_to_global(self, q: int, i: int, j: int):
         """
 
         :param q:
@@ -452,7 +504,16 @@ class SpacePartition:
         :param j:
         :return:
         """
-        raise NotImplementedError
+        if q == 0:
+            return i, j
+        elif q == 1:
+            return i, -j
+        elif q == 2:
+            return -i, -j
+        elif q == 3:
+            return -i, j
+        else:
+            raise ValueError(f"q must be 0, 1, 2, or 3; got {q} instead.")
 
     def convert_to_quadrant(self, I, J):
         """
@@ -461,7 +522,7 @@ class SpacePartition:
         :param J:
         :return:
         """
-        raise NotImplementedError
+        raise TodoException
 
     def get_indices(self, x, y):
         """
@@ -470,17 +531,36 @@ class SpacePartition:
         :param y:
         :return:
         """
-        raise NotImplementedError
+
+        i = floor(abs(x / self.dx))
+        j = floor(abs(y / self.dy))
+
+        return i, j
 
     def get_quadrant(self, x, y):
         """
         Determine the correct quadrant
-        1: (+,+)
-        2: (+,-)
-        3: (-,-)
-        4: (-,+)
+        0: (+,+)
+        1: (+,-)
+        2: (-,-)
+        3: (-,+)
+
+        N.B. this is different from MATLAB implementation, because python is a sensible language
+        that counts from 0 ¯\_(ツ)_/¯
         :param x:
         :param y:
         :return:
         """
-        raise NotImplementedError
+        if x.ndim:
+            raise TodoException
+        else:
+            if x >= 0:
+                if y >= 0:
+                    return 0
+                else:
+                    return 1
+            else:
+                if y < 0:
+                    return 2
+                else:
+                    return 3

@@ -1,10 +1,11 @@
 import torch
 
-from src.utils.config import processor
+from src.utils.config import Config
 
 
 class ColourSet:
-    DEVICE = torch.device(processor)
+    DEVICE = torch.device(Config.processor)
+
     def __init__(self):
         """
         The colours for rendering cells

@@ -84,9 +84,9 @@ class CellCellInteractionForce(AbstractNodeElementForce):
             self.use_internal_repulsion = False
             self.use_node_node_interactions = True
 
-        if da < 0:
-            raise ValueError("CCIF:overlap (The force asymptote position allows overlap, "
-                             "which is not supported for rod cells)")
+            if da < 0:
+                raise ValueError("CCIF:overlap (The force asymptote position allows overlap, "
+                                 "which is not supported for rod cells)")
 
     def add_neighbourhood_based_forces(self, node_list, p=None):
         """

@@ -1,1 +1,3 @@
-processor = "cpu"
+class Config:
+    processor = "cpu"
+    verbose = True

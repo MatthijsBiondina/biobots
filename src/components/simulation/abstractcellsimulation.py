@@ -1,5 +1,6 @@
 import random
 from abc import abstractmethod, ABC
+from typing import List
 
 import numpy
 import torch
@@ -21,6 +22,7 @@ from src.components.simulation.modifiers.abstractsimulationmodifier import \
 from src.components.simulation.stopping.abstractstoppingcondition import \
     AbstractStoppingCondition
 from src.utils.errors import TodoException
+from src.utils.tools import pyout
 
 
 class AbstractCellSimulation(ABC):
@@ -41,25 +43,24 @@ class AbstractCellSimulation(ABC):
         self.stochastic_jiggle = True  # Brownian noise?
         self.epsilon = 0.0001  # Size of the jiggle force
 
-        # todo: I think these class declarations should be iterables
-        self.cell_based_forces: AbstractCellBasedForce = None
-        self.element_based_forces: AbstractElementBasedForce = None
-        self.neighbourhood_based_forces: AbstractNeighbourhoodBasedForce = None
-        self.tissue_based_forces: AbstractTissueBasedForce = None
+        self.cell_based_forces: List[AbstractCellBasedForce] = []
+        self.element_based_forces: List[AbstractElementBasedForce] = []
+        self.neighbourhood_based_forces: List[AbstractNeighbourhoodBasedForce] = []
+        self.tissue_based_forces: List[AbstractTissueBasedForce] = []
 
-        self.stopping_conditions: AbstractStoppingCondition = None
+        self.stopping_conditions: List[AbstractStoppingCondition] = []
 
         self.stopped = False
 
-        self.tissue_level_killers: AbstractTissueLevelCellKiller = None
-        self.cell_killers: AbstractCellKiller = None
+        self.tissue_level_killers: List[AbstractTissueLevelCellKiller] = []
+        self.cell_killers: List[AbstractCellKiller] = []
 
-        self.simulation_modifiers: AbstractSimulationModifier = None
+        self.simulation_modifiers: List[AbstractSimulationModifier] = []
 
         # A collection of objects that store data over multiple time steps with also the
         # potential to write to file
-        self.data_stores: AbstractDataStore = None
-        self.data_writers: AbstractDataWriter = None
+        self.data_stores: List[AbstractDataStore] = []
+        self.data_writers: List[AbstractDataWriter] = []
 
         # A collection of objects for calculating data about the simulation stored in a map
         # container so each type of data can be given a meaningful name
@@ -197,13 +198,13 @@ class AbstractCellSimulation(ABC):
         """
         raise TodoException
 
-    def add_cell_based_force(self, f):
+    def add_cell_based_force(self, f: AbstractCellBasedForce):
         """
 
         :param f:
         :return:
         """
-        raise TodoException
+        self.cell_based_forces.append(f)
 
     def add_element_based_force(self, f):
         """
@@ -213,13 +214,13 @@ class AbstractCellSimulation(ABC):
         """
         raise TodoException
 
-    def add_neighbourhood_based_force(self, f):
+    def add_neighbourhood_based_force(self, f: AbstractNeighbourhoodBasedForce):
         """
 
         :param f:
         :return:
         """
-        raise TodoException
+        self.neighbourhood_based_forces.append(f)
 
     def add_tissue_based_force(self, f):
         """
@@ -488,7 +489,9 @@ class AbstractCellSimulation(ABC):
 
         :return:
         """
-        raise TodoException
+        ii = self.next_node_id
+        self.next_node_id += 1
+        return ii
 
     def _add_nodes_to_list(self, list_of_nodes):
         """

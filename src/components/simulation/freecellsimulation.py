@@ -1,10 +1,12 @@
 import torch
 from numpy import pi
 
+from src.components.cell.cellfree import CellFree
 from src.components.node.node import Node
 from src.components.simulation.abstractcellsimulation import AbstractCellSimulation
 from src.utils.errors import TodoException
 from src.utils.polyshapes import nsidedpoly
+from src.utils.tools import pyout
 
 
 class FreeCellSimulation(AbstractCellSimulation):
@@ -13,6 +15,7 @@ class FreeCellSimulation(AbstractCellSimulation):
         """
         This uses free cells, i.e. cells that never share elements or nodes with other cells
         """
+        super().__init__()
         self._dt = 0.005
         self._t = 0
         self._step = 0
@@ -62,8 +65,4 @@ class FreeCellSimulation(AbstractCellSimulation):
         for ii in range(N):
             nodes.append(Node(v[ii, 0] + x, v[ii, 1] + y, self._get_next_node_id()))
 
-        c = CellFree(ccm, nodes, self._get_next_cell_id())
-
-        print()
-        print()
-        raise TodoException
+        return CellFree(ccm, nodes, self._get_next_cell_id())

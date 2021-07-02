@@ -8,6 +8,7 @@ from src.components.simulation.datawriter.writespatialstate import WriteSpatialS
 from src.components.simulation.freecellsimulation import FreeCellSimulation
 from src.components.simulation.simulationdata.spatialstate import SpatialState
 from src.components.spacepartition import SpacePartition
+from src.utils.tools import pyout
 
 
 class Spheroid(FreeCellSimulation):
@@ -59,9 +60,9 @@ class Spheroid(FreeCellSimulation):
 
             c = self.make_cell_at_centre(N, x + 0.5 * (y % 2), y * 3 ** .5 / 2, ccm)
 
-            self.node_list = [self.node_list, self.node_list]
-            self.element_list = [self.element_list, self.element_list]
-            self.cell_list = [self.cell_list, c]
+            self.node_list += c.node_list
+            self.element_list += c.element_list
+            self.cell_list.append(c)
 
         """ ADD THE FORCES """
 
@@ -84,3 +85,6 @@ class Spheroid(FreeCellSimulation):
                     f"ga{area_energy}gb{perimeter_energy}gt{tension_energy}g_seed{seed}g/"
         self.add_simulation_data(SpatialState())
         self.add_data_writer(WriteSpatialState(20, path_name))
+
+        pyout()
+        pyout()
