@@ -7,6 +7,7 @@ from src.components.cell.element import Element
 from src.components.node.node import Node
 from src.utils.cantrips import as_numpy
 from src.utils.errors import TodoException
+from src.utils.tools import pyout
 
 
 class SpacePartition:
@@ -177,7 +178,8 @@ class SpacePartition:
 
         Q, I, J = self.get_box_indices_between_nodes(n1, n2)
 
-        raise TodoException
+        for ii in range(Q.size(0)):
+            self.insert_element(Q[ii], I[ii], J[ii], e)
 
     def get_node_box_from_node(self, n):
         """
@@ -238,7 +240,7 @@ class SpacePartition:
 
         qp, ip, jp = self.make_element_box_list(q1, i1, j1, q2, i2, j2)
 
-        raise TodoException
+        return qp, ip, jp
 
     def get_box_indices_between_nodes(self, n1: Node, n2: Node):
         """
@@ -250,7 +252,7 @@ class SpacePartition:
 
         ql, il, jl = self.get_box_indices_between_points(n1.position, n2.position)
 
-        raise TodoException
+        return ql, il, jl
 
     def get_box_indices_between_nodes_previous(self, n1, n2):
         """
@@ -300,13 +302,12 @@ class SpacePartition:
 
         # To find the boxes that the element could pass through it is much simpler to convert to
         # global indices, then back to quadrants.
-        # I1, J1 = self.convert_to_global(q1, i1, j1)
-        # I2, J2 = self.convert_to_global(q2, i2, j2)
-        #
-        # Il = torch.tensor(range(I1, I2 + 1) if I1 < I2 else range(I2, I1 + 1))
-        # Jl = torch.tensor(range(J1, J2 + 1) if J1 < J2 else range(J2, J1 + 1))
+        I1, J1 = self.convert_to_global(q1, i1, j1)
+        I2, J2 = self.convert_to_global(q2, i2, j2)
 
-        # todo: this does not work yet
+        Il = torch.tensor(range(I1, I2 + 1) if I1 < I2 else range(I2, I1 + 1))
+        Jl = torch.tensor(range(J1, J2 + 1) if J1 < J2 else range(J2, J1 + 1))
+
         # since MATLAB indexes from 1 instead of 0, I think conversion to global should take this
         # into account
 
@@ -317,8 +318,17 @@ class SpacePartition:
         # (-2,-1) (-1,-1) | ( 1, -1) (2, -1)     (-2, -1) (-1, -1) | ( 0, -1) ( 1, -1)
         #         (-1,-2) | ( 1, -2)                      (-1, -2) | ( 0, -2)
 
+        # Note that intermediate solutions p and q do not match MATLAB implementation since
+        # meshgrid and flatten go along different dimension in MATLAB
+        p, q = torch.meshgrid(Il, Jl)
+        # p, q = [x.T for x in torch.meshgrid(Il, Jl)]
 
-        raise TodoException
+        Il = p.reshape(-1)
+        Jl = q.reshape(-1)
+
+        ql, il, jl = self.convert_to_quadrant(Il, Jl)
+
+        return ql, il, jl
 
     def update_box_for_node(self, n):
         """
@@ -407,7 +417,22 @@ class SpacePartition:
         :param e:
         :return:
         """
-        raise TodoException
+        q = int(q.item())
+        i = int(i.item())
+        j = int(j.item())
+
+        try:
+            if e in self.elements_Q[q][i][j]:
+                pyout(f"Element {e} already in elements_Q")
+            else:
+                self.elements_Q[q][i][j].append(e)
+        except IndexError:
+            while len(self.elements_Q[q]) <= i:
+                self.elements_Q[q].append([])
+            while len(self.elements_Q[q][i]) <= j:
+                self.elements_Q[q][i].append([])
+            self.elements_Q[q][i][j].append(e)
+
 
     def remove_element_from_box(self, q, i, j, e):
         """
@@ -504,14 +529,25 @@ class SpacePartition:
         :param j:
         :return:
         """
+
+        # Note the difference in implementation between MATLAB and Python version, due to MATLAB
+        # indexing from 0
+        #
+        # MATLAB                                 PYTHON
+        #         (-1, 2) | ( 1,  2)                      (-1,  1) | ( 0,  1)
+        # (-2, 1) (-1, 1) | ( 1,  1) (2,  1)     (-2,  0) (-1,  0) | ( 0,  0) ( 1,  0)
+        # ----------------+-----------------     ------------------+------------------
+        # (-2,-1) (-1,-1) | ( 1, -1) (2, -1)     (-2, -1) (-1, -1) | ( 0, -1) ( 1, -1)
+        #         (-1,-2) | ( 1, -2)                      (-1, -2) | ( 0, -2)
+
         if q == 0:
             return i, j
         elif q == 1:
-            return i, -j
+            return i, -j - 1
         elif q == 2:
-            return -i, -j
+            return -i - 1, -j - 1
         elif q == 3:
-            return -i, j
+            return -i - 1, j
         else:
             raise ValueError(f"q must be 0, 1, 2, or 3; got {q} instead.")
 
@@ -522,7 +558,22 @@ class SpacePartition:
         :param J:
         :return:
         """
-        raise TodoException
+        q = self.get_quadrant(I, J)
+
+        # Note the additional translation for quadrants 1, 2, and 3 due to the difference between
+        # chosen indexing schemes in the MATLAB and PYTHON implementations
+        #
+        # MATLAB                                 PYTHON
+        #         (-1, 2) | ( 1,  2)                      (-1,  1) | ( 0,  1)
+        # (-2, 1) (-1, 1) | ( 1,  1) (2,  1)     (-2,  0) (-1,  0) | ( 0,  0) ( 1,  0)
+        # ----------------+-----------------     ------------------+------------------
+        # (-2,-1) (-1,-1) | ( 1, -1) (2, -1)     (-2, -1) (-1, -1) | ( 0, -1) ( 1, -1)
+        #         (-1,-2) | ( 1, -2)                      (-1, -2) | ( 0, -2)
+
+        i = torch.abs(I) - 1 * ((q == 2) | (q == 3))
+        j = torch.abs(J) - 1 * ((q == 1) | (q == 2))
+
+        return q, i, j
 
     def get_indices(self, x, y):
         """
@@ -552,7 +603,11 @@ class SpacePartition:
         :return:
         """
         if x.ndim:
-            raise TodoException
+            q = torch.zeros(x.size())
+            q = torch.where((x >= 0) & (y < 0), torch.full_like(q, 1), q)
+            q = torch.where((x < 0) & (y < 0), torch.full_like(q, 2), q)
+            q = torch.where((x < 0) & (y >= 0), torch.full_like(q, 3), q)
+            return q
         else:
             if x >= 0:
                 if y >= 0:

@@ -4,6 +4,7 @@ from typing import List
 
 import numpy
 import torch
+import matplotlib.pyplot as plt
 
 from src.components.cell.celldeath.abstractcellkiller import AbstractCellKiller
 from src.components.cell.celldeath.abstracttissuelevelcellkiller import \
@@ -276,7 +277,8 @@ class AbstractCellSimulation(ABC):
         :param w:
         :return:
         """
-        raise TodoException
+        self.data_writers.append(w)
+
 
     def add_simulation_data(self, d):
         """
@@ -284,7 +286,7 @@ class AbstractCellSimulation(ABC):
         :param d:
         :return:
         """
-        raise TodoException
+        self.sim_data[d.name] = d
 
     def store_data(self):
         """
@@ -416,6 +418,12 @@ class AbstractCellSimulation(ABC):
         :param sm:
         :return:
         """
+
+        h = plt.figure()
+
+        pyout()
+        pyout()
+
         raise TodoException
 
     def animate_wire_frame(self, n, sm):

@@ -85,6 +85,3 @@ class Spheroid(FreeCellSimulation):
                     f"ga{area_energy}gb{perimeter_energy}gt{tension_energy}g_seed{seed}g/"
         self.add_simulation_data(SpatialState())
         self.add_data_writer(WriteSpatialState(20, path_name))
-
-        pyout()
-        pyout()
