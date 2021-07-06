@@ -1,7 +1,8 @@
-import random
+# import random
 
 from src.components.cell.cellcycle.abstractcellcyclemodel import AbstractCellCycleModel
 from src.utils.errors import TodoException
+from src.utils.tools import pseudo_rand
 
 
 class GrowthContactInhibition(AbstractCellCycleModel):
@@ -25,16 +26,22 @@ class GrowthContactInhibition(AbstractCellCycleModel):
         self.minimum_pause_phase_duration = 0
         self.minimum_growth_phase_duration = 4
 
-        self.pause_phase_rng = random.random()
-        self.growth_phase_rng = random.random()
+        # todo: We use our own psuedo-rng for now for interchangability with MATLAB version
+        # self.pause_phase_rng = random.random()
+        # self.growth_phase_rng = random.random()
+        self.pause_phase_duration = pseudo_rand()
+        self.growth_phase_duration = pseudo_rand()
 
         self.pause_colour = None
         self.growth_colour = None
         self.inhibited_colour = None
 
+        # todo: We use our own psuedo-rng for now for interchangability with MATLAB version
         # constructor
-        self.pause_phase_rng = lambda: random.uniform(-2, 2)
-        self.growth_phase_rng = lambda: random.uniform(-2, 2)
+        # self.pause_phase_rng = lambda: random.uniform(-2, 2)
+        # self.growth_phase_rng = lambda: random.uniform(-2, 2)
+        self.pause_phase_rng = lambda: (pseudo_rand() * 4) - 2
+        self.growth_phase_rng = lambda: (pseudo_rand() * 4) - 2
 
         self.set_pause_phase_duration(p)
         self.set_growth_phase_duration(g)
@@ -44,7 +51,9 @@ class GrowthContactInhibition(AbstractCellCycleModel):
         self.dt = dt
 
         # By default cell will start off in the pause phase
-        self.set_age(round(random.uniform(0, self.pause_phase_duration), 1))
+        # todo: We use our own psuedo-rng for now for interchangability with MATLAB version
+        # self.set_age(round(random.uniform(0, self.pause_phase_duration), 1))
+        self.set_age(round(pseudo_rand() * self.pause_phase_duration, 1))
 
         self.pause_colour = self.colour_set.get_number('PAUSE')
         self.growth_colour = self.colour_set.get_number('GROW')

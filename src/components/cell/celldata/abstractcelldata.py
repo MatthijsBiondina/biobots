@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 
+from src.components.cell.abstractcell import AbstractCell
 from src.utils.errors import TodoException
+from src.utils.tools import pyout
 
 
 class AbstractCellData(ABC):
@@ -55,5 +57,11 @@ class AbstractCellData(ABC):
         """
         pass
 
-    def get_data(self, c):
+    def get_data(self, c: AbstractCell):
+        if self.age_stamp == c.get_age():
+            return self.data
+        else:
+            self.age_stamp = c.get_age()
+            self.calculate_data(c)
+            return self.data
         raise TodoException

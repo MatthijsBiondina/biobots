@@ -62,6 +62,9 @@ class AbstractCell(ABC):
 
         :return:
         """
+
+        current_area = self.cell_data['cell_area'].get_data(self)
+
         raise TodoException
 
     def get_cell_target_area(self):
@@ -99,7 +102,7 @@ class AbstractCell(ABC):
         raise TodoException
 
     def get_age(self):
-        raise TodoException
+        return self.cell_cycle_model.get_age()
 
     def get_colour(self):
         raise TodoException
@@ -128,4 +131,3 @@ class AbstractCell(ABC):
 
     def draw_cell_previous(self):
         raise TodoException
-

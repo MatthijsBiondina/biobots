@@ -1,5 +1,9 @@
+import torch
+
+from src.components.cell.abstractcell import AbstractCell
 from src.components.cell.celldata.abstractcelldata import AbstractCellData
 from src.utils.errors import TodoException
+from src.utils.polyshapes import polyarea
 
 
 class CellArea(AbstractCellData):
@@ -24,10 +28,14 @@ class CellArea(AbstractCellData):
     def data(self, value):
         self._data = value
 
-    def calculate_data(self, c):
+    def calculate_data(self, c: AbstractCell):
         """
         Node list must be in order around the cell
         :param c:
         :return:
         """
+        x = torch.stack([node.x for node in c.node_list])
+        y = torch.stack([node.y for node in c.node_list])
+        self.data = polyarea(x, y)
+
         raise TodoException

@@ -1,4 +1,8 @@
+from typing import List
+
+from src.components.cell.abstractcell import AbstractCell
 from src.components.forces.cellbasedforce.abstractcellbasedforce import AbstractCellBasedForce
+from src.utils.tools import pyout
 
 
 class PolygonCellGrowthForce(AbstractCellBasedForce):
@@ -11,12 +15,19 @@ class PolygonCellGrowthForce(AbstractCellBasedForce):
         self.perimeter_energy_parameter = perimeter_P
         self.surface_tension_energy_parameter = tension_P
 
-    def add_cell_based_forces(self, cell_list: list):
+    def add_cell_based_forces(self, cell_list: List[AbstractCell]):
         """
         For each cell in the list, calculate the forces and add them to the nodes
         :param cell_list:
         :return:
         """
+        for c in cell_list:
+            if c.cell_type != 5: # As long as it is not stromal type
+                self.add_target_area_forces(c)
+
+                pyout()
+                pyout()
+
         raise NotImplementedError
 
     def add_target_area_forces(self, c):
@@ -50,6 +61,9 @@ class PolygonCellGrowthForce(AbstractCellBasedForce):
         :param c:
         :return:
         """
+
+        current_area = c.get_cell_area()
+
         raise NotImplementedError
 
     def add_target_perimeter_forces(self, c):

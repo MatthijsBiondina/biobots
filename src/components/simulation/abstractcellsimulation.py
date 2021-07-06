@@ -1,8 +1,9 @@
-import random
+# import random
 from abc import abstractmethod, ABC
 from typing import List
 
 import numpy
+import numpy as np
 import torch
 import matplotlib.pyplot as plt
 
@@ -98,7 +99,8 @@ class AbstractCellSimulation(ABC):
         """
         self.seed = seed
 
-        random.seed(seed)
+        # todo: No need for this as long as we use our custom pseudo-random generator
+        # random.seed(seed)
         numpy.random.seed(seed)
         torch.manual_seed(seed)
 
@@ -107,6 +109,13 @@ class AbstractCellSimulation(ABC):
         Updates all the forces and applies the movements
         :return:
         """
+
+        self.generate_tissue_based_forces()
+        self.generate_cell_based_forces()
+
+        pyout()
+        pyout()
+
         raise TodoException
 
     def n_time_steps(self, n):
@@ -115,6 +124,14 @@ class AbstractCellSimulation(ABC):
         :param n:
         :return:
         """
+
+        for ii in range(n):
+            # Do all the calculations
+            self.next_time_step()
+
+            pyout()
+            pyout()
+
         raise TodoException
 
     def run_to_time(self, t):
@@ -130,13 +147,17 @@ class AbstractCellSimulation(ABC):
 
         :return:
         """
-        raise TodoException
+        for force in self.tissue_based_forces:
+            force.add_tissue_based_forces(self)
 
     def generate_cell_based_forces(self):
         """
 
         :return:
         """
+        for force in self.cell_based_forces:
+            force.add_cell_based_forces(self.cell_list)
+
         raise TodoException
 
     def generate_element_based_forces(self):
@@ -279,7 +300,6 @@ class AbstractCellSimulation(ABC):
         """
         self.data_writers.append(w)
 
-
     def add_simulation_data(self, d):
         """
 
@@ -419,9 +439,11 @@ class AbstractCellSimulation(ABC):
         :return:
         """
 
-        h = plt.figure()
+        totalSteps = 0
+        while totalSteps < n:
+            self.n_time_steps(sm)
 
-        pyout()
+            pyout()
         pyout()
 
         raise TodoException

@@ -1,4 +1,4 @@
-from src.components.cell.cellcycle.contactinhibitioncellcycle import GrowthContactInhibition
+from src.components.cell.cellcycle.growthcontactinhibition import GrowthContactInhibition
 from src.components.forces.cellbasedforce.freecellperimeternormalisingforce import \
     FreeCellPerimeterNormalisingForce
 from src.components.forces.cellbasedforce.polygoncellgrowthforce import PolygonCellGrowthForce

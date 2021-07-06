@@ -44,7 +44,7 @@ class AbstractCellCycleModel(ABC):
 
         :return:
         """
-        raise TodoException
+        return self.age
 
     def set_age(self, age):
         """

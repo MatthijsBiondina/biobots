@@ -3,7 +3,7 @@ from typing import Union
 
 import torch
 from numpy import pi
-from torch import cos, sin
+from torch import cos, sin, Tensor
 
 from src.utils.errors import TodoException
 
@@ -60,3 +60,7 @@ def nsidedpoly(N: int, mode: Union[None, str] = None, arg=1):
         raise TodoException
     else:
         raise ValueError("Choose one: 'radius', 'centre'")
+
+
+def polyarea(x: Tensor, y: Tensor):
+    return 0.5 * torch.abs(torch.dot(x, y.roll(1)) - torch.dot(y, x.roll(1)))
