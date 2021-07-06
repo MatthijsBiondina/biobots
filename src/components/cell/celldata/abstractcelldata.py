@@ -64,4 +64,3 @@ class AbstractCellData(ABC):
             self.age_stamp = c.get_age()
             self.calculate_data(c)
             return self.data
-        raise TodoException

@@ -112,6 +112,11 @@ class AbstractCellSimulation(ABC):
 
         self.generate_tissue_based_forces()
         self.generate_cell_based_forces()
+        self.generate_element_based_forces()
+
+        if self.using_boxes:
+            self.generate_neighbourhood_based_forces()
+
 
         pyout()
         pyout()
@@ -158,20 +163,25 @@ class AbstractCellSimulation(ABC):
         for force in self.cell_based_forces:
             force.add_cell_based_forces(self.cell_list)
 
-        raise TodoException
-
     def generate_element_based_forces(self):
         """
 
         :return:
         """
-        raise TodoException
+        for force in self.element_based_forces:
+            force.add_element_based_forces(self.element_list)
 
     def generate_neighbourhood_based_forces(self):
         """
 
         :return:
         """
+        if self.boxes is None:
+            ValueError("Space partition required for NeighbourhoodForces, but none set")
+
+        for force in self.neighbourhood_based_forces:
+            force.add_neighbourhood_based_forces(self.node_list, self.boxes)
+
         raise TodoException
 
     def make_nodes_move(self):

@@ -1,5 +1,5 @@
 from src.models.polygoncellsimulation.spheroid import Spheroid
-from src.utils.tools import pyout, pseudo_rand
+from src.utils.tools import pyout, prng
 
 s = Spheroid(10, 10, 10, 5, 0)
 s.animate(1000, 1)

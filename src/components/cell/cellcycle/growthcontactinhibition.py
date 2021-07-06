@@ -2,7 +2,7 @@
 
 from src.components.cell.cellcycle.abstractcellcyclemodel import AbstractCellCycleModel
 from src.utils.errors import TodoException
-from src.utils.tools import pseudo_rand
+from src.utils.tools import prng
 
 
 class GrowthContactInhibition(AbstractCellCycleModel):
@@ -29,8 +29,8 @@ class GrowthContactInhibition(AbstractCellCycleModel):
         # todo: We use our own psuedo-rng for now for interchangability with MATLAB version
         # self.pause_phase_rng = random.random()
         # self.growth_phase_rng = random.random()
-        self.pause_phase_duration = pseudo_rand()
-        self.growth_phase_duration = pseudo_rand()
+        self.pause_phase_duration = prng()
+        self.growth_phase_duration = prng()
 
         self.pause_colour = None
         self.growth_colour = None
@@ -40,8 +40,8 @@ class GrowthContactInhibition(AbstractCellCycleModel):
         # constructor
         # self.pause_phase_rng = lambda: random.uniform(-2, 2)
         # self.growth_phase_rng = lambda: random.uniform(-2, 2)
-        self.pause_phase_rng = lambda: (pseudo_rand() * 4) - 2
-        self.growth_phase_rng = lambda: (pseudo_rand() * 4) - 2
+        self.pause_phase_rng = lambda: (prng() * 4) - 2
+        self.growth_phase_rng = lambda: (prng() * 4) - 2
 
         self.set_pause_phase_duration(p)
         self.set_growth_phase_duration(g)
@@ -53,7 +53,7 @@ class GrowthContactInhibition(AbstractCellCycleModel):
         # By default cell will start off in the pause phase
         # todo: We use our own psuedo-rng for now for interchangability with MATLAB version
         # self.set_age(round(random.uniform(0, self.pause_phase_duration), 1))
-        self.set_age(round(pseudo_rand() * self.pause_phase_duration, 1))
+        self.set_age(round(prng() * self.pause_phase_duration, 1))
 
         self.pause_colour = self.colour_set.get_number('PAUSE')
         self.growth_colour = self.colour_set.get_number('GROW')
@@ -86,7 +86,10 @@ class GrowthContactInhibition(AbstractCellCycleModel):
 
         :return:
         """
-        raise TodoException
+        if self.age < self.pause_phase_duration:
+            return 0
+        else:
+            raise TodoException
 
     def set_pause_phase_duration(self, p):
         """

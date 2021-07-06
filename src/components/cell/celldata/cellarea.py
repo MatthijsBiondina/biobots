@@ -37,5 +37,3 @@ class CellArea(AbstractCellData):
         x = torch.stack([node.x for node in c.node_list])
         y = torch.stack([node.y for node in c.node_list])
         self.data = polyarea(x, y)
-
-        raise TodoException

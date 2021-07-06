@@ -1,7 +1,8 @@
 from math import floor
+from typing import List
 
 import torch
-from torch import Tensor
+from torch import Tensor, tensor
 
 from src.components.cell.element import Element
 from src.components.node.node import Node
@@ -72,7 +73,7 @@ class SpacePartition:
             if not e.is_element_internal():
                 self.put_element_in_boxes(e)
 
-    def get_neighbouring_elements(self, n, r):
+    def get_neighbouring_elements(self, n: Node, r: float):
         """
         A function that efficiently finds the set of elements that are within a distance r of the
         node n.
@@ -89,6 +90,13 @@ class SpacePartition:
         :param r: radius
         :return:
         """
+
+        b = []
+
+        if self.only_boxes_in_proximity:
+            b = self.assemble_candidate_elements(n, r)
+        else:
+            raise TodoException
         raise TodoException
 
     def get_neighbouring_nodes(self, nl, r):
@@ -129,13 +137,40 @@ class SpacePartition:
         """
         raise TodoException
 
-    def assemble_candidate_elements(self, n, r):
+    def assemble_candidate_elements(self, n: Node, r: float):
         """
 
         :param n:
         :param r:
         :return:
         """
+        b: List[Element] = self.get_element_box_from_node(n)
+
+        # Then check if the node is near a boundary
+        # Need to decide if the process of check is more effort than just taking the adjacent
+        # boxes always, even when the node is in the middle of its box
+
+        if floor(n.x / self.dx) != floor((n.x - r) / self.dx):  # left
+            b.extend(self.get_adjacent_element_box_from_node(n, [-1, 0]))
+        if floor(n.x / self.dx) != floor((n.x + r) / self.dx):  # right
+            b.extend(self.get_adjacent_element_box_from_node(n, [1, 0]))
+        if floor(n.y / self.dy) != floor((n.y - r) / self.dy):  # bottom
+            b.extend(self.get_adjacent_element_box_from_node(n, [0, -1]))
+        if floor(n.y / self.dy) != floor((n.y + r) / self.dy):  # top
+            b.extend(self.get_adjacent_element_box_from_node(n, [0, 1]))
+        if (floor(n.x / self.dx) != floor((n.x - r) / self.dx)
+                and floor(n.y / self.dy) != floor((n.y - r) / self.dy)):  # left bottom
+            b.extend(self.get_adjacent_element_box_from_node(n, [-1, -1]))
+        if (floor(n.x / self.dx) != floor((n.x + r) / self.dx)
+                and floor(n.y / self.dy) != floor((n.y - r) / self.dy)):  # right bottom
+            b.extend(self.get_adjacent_element_box_from_node(n, [1, -1]))
+        if (floor(n.x / self.dx) != floor((n.x - r) / self.dx)
+                and floor(n.y / self.dy) != floor((n.y + r) / self.dy)):  # left top
+            b.extend(self.get_adjacent_element_box_from_node(n, [-1, 1]))
+        if (floor(n.x / self.dx) != floor((n.x + r) / self.dx)
+                and floor(n.y / self.dy) != floor((n.y + r) / self.dy)):  # right top
+            b.extend(self.get_adjacent_element_box_from_node(n, [1, 1]))
+
         raise TodoException
 
     def assemble_candidate_nodes(self, n, r):
@@ -195,9 +230,16 @@ class SpacePartition:
         :param n:
         :return:
         """
-        raise TodoException
+        # Returns the same box that n is in
+        q, i, j = self.get_quadrant_and_indices(n.x, n.y)
 
-    def get_adjacent_indices_from_node(self, n, direction):
+        try:
+            return self.elements_Q[q][i][j]
+        except KeyError:
+            raise KeyError(f"Elements don't exist where expected in the partition (q{q}, ({i}, "
+                           f"{j})")
+
+    def get_adjacent_indices_from_node(self, n: Node, direction: List[int]):
         """
 
         :param n:
@@ -206,7 +248,11 @@ class SpacePartition:
                           a is applied to I and b is applied to J
         :return:
         """
-        raise TodoException
+        a, b = direction
+        q, i, j = self.get_quadrant_and_indices(n.x, n.y)
+        I, J = self.convert_to_global(q, i, j)
+
+        return self.convert_to_quadrant(I + a, J + b)
 
     def get_adjacent_node_box_from_node(self, n, direction):
         """
@@ -217,14 +263,19 @@ class SpacePartition:
         """
         raise TodoException
 
-    def get_adjacent_element_box_from_node(self, n, direction):
+    def get_adjacent_element_box_from_node(self, n: Node, direction: List[int]):
         """
-        Returns the node box adjacent to the one indicated specifying the directionection
+        Returns the node box adjacent to the one indicated specifying the direction
         :param n:
         :param direction:
         :return:
         """
-        raise TodoException
+        q, i, j = self.get_adjacent_indices_from_node(n, direction)
+
+        try:
+            return self.elements_Q[q][i][j]
+        except IndexError:
+            return []
 
     def get_box_indices_between_points(self, pos1: Tensor, pos2: Tensor):
         """
@@ -433,7 +484,6 @@ class SpacePartition:
                 self.elements_Q[q][i].append([])
             self.elements_Q[q][i][j].append(e)
 
-
     def remove_element_from_box(self, q, i, j, e):
         """
         If it gets to this point, the elemet should be in the given box. If it's not, could be a
@@ -521,7 +571,7 @@ class SpacePartition:
         """
         raise TodoException
 
-    def convert_to_global(self, q: int, i: int, j: int):
+    def convert_to_global(self, q: Tensor, i: Tensor, j: Tensor):
         """
 
         :param q:
@@ -583,8 +633,8 @@ class SpacePartition:
         :return:
         """
 
-        i = floor(abs(x / self.dx))
-        j = floor(abs(y / self.dy))
+        i = torch.floor(torch.abs(x / self.dx)).int()
+        j = torch.floor(torch.abs(y / self.dy)).int()
 
         return i, j
 
@@ -611,11 +661,11 @@ class SpacePartition:
         else:
             if x >= 0:
                 if y >= 0:
-                    return 0
+                    return tensor(0)
                 else:
-                    return 1
+                    return tensor(1)
             else:
                 if y < 0:
-                    return 2
+                    return tensor(2)
                 else:
-                    return 3
+                    return tensor(3)

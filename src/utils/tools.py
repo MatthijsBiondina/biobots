@@ -56,7 +56,7 @@ def pyout(message = None):
 pseudo_random_state = 49
 
 
-def pseudo_rand(decimals=4):
+def prng(decimals=4):
     global pseudo_random_state
 
     ou = 0

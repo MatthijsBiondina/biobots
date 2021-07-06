@@ -1,5 +1,9 @@
+from typing import List, Union
+
 from src.components.forces.neighbourhoodbasedforce.abstractnodeelementforce import \
     AbstractNodeElementForce
+from src.components.node.node import Node
+from src.components.spacepartition import SpacePartition
 from src.utils.errors import TodoException
 
 
@@ -88,7 +92,8 @@ class CellCellInteractionForce(AbstractNodeElementForce):
                 raise ValueError("CCIF:overlap (The force asymptote position allows overlap, "
                                  "which is not supported for rod cells)")
 
-    def add_neighbourhood_based_forces(self, node_list, p=None):
+    def add_neighbourhood_based_forces(self, node_list: List[Node],
+                                       p: Union[SpacePartition, None] = None):
         """
         Here we calculate the forces between nodes and edges, and nodes and nodes.
 
@@ -105,6 +110,14 @@ class CellCellInteractionForce(AbstractNodeElementForce):
         :param p:
         :return:
         """
+        for n in node_list:
+            if self.use_node_node_interactions:
+                raise TodoException
+            else:
+                e_list = p.get_neighbouring_elements(n, self.d_limit)
+                n_list: List[Node] = []
+
+
         raise TodoException
 
     def force_law(self, x, internal):

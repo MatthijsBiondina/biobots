@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 
+from src.components.cell.cellcycle.abstractcellcyclemodel import AbstractCellCycleModel
 from src.components.cell.element import Element
 from src.components.node.node import Node
 from src.utils.errors import TodoException
@@ -18,7 +19,7 @@ class AbstractCell(ABC):
         self.new_cell_target_area = 0.5
         self.grown_cell_target_area = 1
 
-        self.cell_cycle_model = None
+        self.cell_cycle_model: AbstractCellCycleModel = None
 
         self.deformation_energy_parameter = 10
         self.surface_energy_parameter = 1
@@ -62,20 +63,17 @@ class AbstractCell(ABC):
 
         :return:
         """
-
-        current_area = self.cell_data['cell_area'].get_data(self)
-
-        raise TodoException
+        return self.cell_data['cell_area'].get_data(self)
 
     def get_cell_target_area(self):
         """
         This is so the target area can be a function of cell age
         :return:
         """
-        raise TodoException
+        return self.cell_data['target_area'].get_data(self)
 
     def get_cell_perimeter(self):
-        raise TodoException
+        return self.cell_data['cell_perimeter'].get_data(self)
 
     def get_cell_centre(self):
         raise TodoException
@@ -85,6 +83,7 @@ class AbstractCell(ABC):
         This is so the target area can be a function of cell age
         :return:
         """
+        return self.cell_data['target_perimeter'].get_data(self)
 
     def is_ready_to_divide(self):
         raise TodoException

@@ -1,7 +1,10 @@
 from typing import List
 
+import torch
+
 from src.components.cell.abstractcell import AbstractCell
 from src.components.forces.cellbasedforce.abstractcellbasedforce import AbstractCellBasedForce
+from src.utils.errors import TodoException
 from src.utils.tools import pyout
 
 
@@ -22,13 +25,11 @@ class PolygonCellGrowthForce(AbstractCellBasedForce):
         :return:
         """
         for c in cell_list:
-            if c.cell_type != 5: # As long as it is not stromal type
+            if c.cell_type != 5:  # As long as it is not stromal type
                 self.add_target_area_forces(c)
+                self.add_target_perimeter_forces(c)
+                self.add_surface_tension_forces(c)
 
-                pyout()
-                pyout()
-
-        raise NotImplementedError
 
     def add_target_area_forces(self, c):
         """
@@ -58,15 +59,29 @@ class PolygonCellGrowthForce(AbstractCellBasedForce):
         Practically, for each node in a cell, we take the cw and acw nodes, find the vector
         cw -> acw, find it's perpendicular vector, and apply a force along this vector according
         to the area energy parameter and the dA from equilibrium
+
+        See Equations 29 & 30
         :param c:
         :return:
         """
 
         current_area = c.get_cell_area()
+        target_area = c.get_cell_target_area()
 
-        raise NotImplementedError
+        magnitude = self.area_energy_parameter * (current_area - target_area)
 
-    def add_target_perimeter_forces(self, c):
+        N = len(c.node_list)
+        for ii in range(N):
+            n = c.node_list[ii]
+            ncw = c.node_list[(ii - 1) % N]
+            nacw = c.node_list[(ii + 1) % N]
+
+            u = nacw.position - ncw.position
+            v = u @ torch.tensor([[0., -1.], [1., 0.]])
+
+            n.add_force_contribution(-v * magnitude)
+
+    def add_target_perimeter_forces(self, c: AbstractCell):
         """
         This calculates the force applied to the cell boundary due to a difference between
         current perimeter and target perimeter. The energy held in the boundary is given by
@@ -78,7 +93,17 @@ class PolygonCellGrowthForce(AbstractCellBasedForce):
         :param c:
         :return:
         """
-        raise NotImplementedError
+        current_perimeter = c.get_cell_perimeter()
+        target_perimeter = c.get_cell_target_perimeter()
+
+        magnitude = 2 * self.perimeter_energy_parameter * (current_perimeter - target_perimeter)
+
+        for e in c.element_list:
+            r = e.get_vector_1_to_2()
+            f = magnitude * r
+
+            e.node_1.add_force_contribution(f)
+            e.node_2.add_force_contribution(-f)
 
     def add_surface_tension_forces(self, c):
         """
@@ -112,4 +137,10 @@ class PolygonCellGrowthForce(AbstractCellBasedForce):
         :param c:
         :return:
         """
-        raise NotImplementedError
+
+        for e in c.element_list:
+            r = e.get_vector_1_to_2()
+            f = self.surface_tension_energy_parameter * r
+
+            e.node_1.add_force_contribution(f)
+            e.node_2.add_force_contribution(-f)

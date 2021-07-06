@@ -1,25 +1,27 @@
 import warnings
 
 import torch
+from torch import Tensor
 
 from src.components.node.nodedata.elementneighbours import ElementNeighbours
 from src.utils.errors import TodoException
+from src.utils.tools import pyout
 
 
 class Node:
-    def __init__(self, x, y, id_):
+    def __init__(self, x: Tensor, y: Tensor, id_):
         """
         A class specifying the details about nodes
         """
         self.x = x
         self.y = y
-        self.position = torch.tensor([x,y])
+        self.position = torch.tensor([x, y])
         # Need to give the node a previous position so elements can move to a new nox on the very
         # first time step
-        self.previous_position = torch.tensor([x,y])
+        self.previous_position = torch.tensor([x, y])
         self.id = id_
-        self.force = torch.tensor([0, 0])
-        self.previous_force = torch.tensor([0,0])
+        self.force = torch.tensor([0., 0.])
+        self.previous_force = torch.tensor([0., 0.])
 
         # This will be circular - each element will have two nodes. Each node can be part of
         # multiple elements, similarly for cells
@@ -39,8 +41,11 @@ class Node:
     def delete(self):
         raise TodoException
 
-    def add_force_contribution(self, force):
-        raise TodoException
+    def add_force_contribution(self, force: Tensor):
+        if torch.any(force.isnan() | force.isinf()):
+            raise ValueError(f"Force is inf or NaN")
+        else:
+            self.force = self.force + force
 
     def move_node(self, pos):
         """
@@ -114,6 +119,7 @@ class Node:
         :return:
         """
         raise TodoException
+
 
 if __name__ == '__main__':
     print("foo")

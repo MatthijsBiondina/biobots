@@ -20,6 +20,8 @@ class Polyshape:
             # vector of corresponding y-coordintates. x and y must be the same length with at
             # least three elements
             self.vertices = torch.stack((x, y), dim=1)
+            # todo: debug remove rounding
+            self.vertices[torch.abs(self.vertices) < 0.00001] = 0.
             self._num_regions = 1
             self._num_holes = 0
         elif x is None and y is None and P is not None and X is None and Y is None:
@@ -54,7 +56,7 @@ def nsidedpoly(N: int, mode: Union[None, str] = None, arg=1):
     """
     if mode == 'radius':
         x = cos(torch.arange(0, 2 * pi, 2 * pi / N)) * arg
-        y = sin(torch.arange(0, 2 * pi, 2 * pi / N)) * arg
+        y = sin(torch.arange(0, 2 * pi, 2 * pi / N,)) * arg
         return Polyshape(x=x, y=y)
     elif mode == 'centre':
         raise TodoException

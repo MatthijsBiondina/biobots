@@ -1,3 +1,4 @@
+from src.components.cell.abstractcell import AbstractCell
 from src.components.cell.celldata.abstractcelldata import AbstractCellData
 from src.utils.errors import TodoException
 
@@ -26,10 +27,10 @@ class CellPerimeter(AbstractCellData):
     def data(self, value):
         self._data = value
 
-    def calculate_data(self, c):
+    def calculate_data(self, c: AbstractCell):
         """
         Node list must be in order around the cell
         :param c:
         :return:
         """
-        raise TodoException
+        self.data = sum(e.get_length() for e in c.element_list)

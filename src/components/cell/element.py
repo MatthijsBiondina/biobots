@@ -1,3 +1,6 @@
+import torch
+
+from src.components.node.node import Node
 from src.utils.errors import TodoException
 
 
@@ -36,8 +39,8 @@ class Element:
 
         # This will be circular - each element will have two nodes. Each node can be part of
         # multiple elements
-        self.node_1 = node_1
-        self.node_2 = node_2
+        self.node_1: Node = node_1
+        self.node_2: Node = node_2
 
         # Used only when an element is modified during cell division. Keep track of the old node
         # to help with adjusting the element boxes
@@ -49,7 +52,7 @@ class Element:
         self.natural_length = 1
         self.stiffness = 20
 
-        self.minimum_length= 0.2
+        self.minimum_length = 0.2
 
         self.node_list = [self.node_1, self.node_2]
         self.cell_list = None
@@ -91,10 +94,12 @@ class Element:
         raise TodoException
 
     def get_length(self):
-        raise TodoException
+        return torch.sum((self.node_1.position - self.node_2.position) ** 2) ** .5
 
     def get_vector_1_to_2(self):
-        raise TodoException
+        direction_1_to_2 = self.node_2.position - self.node_1.position
+        direction_1_to_2 /= torch.linalg.norm(direction_1_to_2)
+        return direction_1_to_2
 
     def get_outward_normal(self):
         """
