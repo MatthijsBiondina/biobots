@@ -6,10 +6,13 @@ import numpy
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
+from torch import tensor
 
+from src.components.cell.abstractcell import AbstractCell
 from src.components.cell.celldeath.abstractcellkiller import AbstractCellKiller
 from src.components.cell.celldeath.abstracttissuelevelcellkiller import \
     AbstractTissueLevelCellKiller
+from src.components.cell.element import Element
 from src.components.forces.cellbasedforce.abstractcellbasedforce import AbstractCellBasedForce
 from src.components.forces.elementbasedforce.abstractelementbasedforce import \
     AbstractElementBasedForce
@@ -17,14 +20,16 @@ from src.components.forces.neighbourhoodbasedforce.abstractneighbourhoodbasedfor
     AbstractNeighbourhoodBasedForce
 from src.components.forces.tissuebasedforce.abstracttissuebasedforce import \
     AbstractTissueBasedForce
+from src.components.node.node import Node
 from src.components.simulation.datastore.abstractdatastore import AbstractDataStore
 from src.components.simulation.datawriter.abstractdatawriter import AbstractDataWriter
 from src.components.simulation.modifiers.abstractsimulationmodifier import \
     AbstractSimulationModifier
 from src.components.simulation.stopping.abstractstoppingcondition import \
     AbstractStoppingCondition
+from src.components.spacepartition import SpacePartition
 from src.utils.errors import TodoException
-from src.utils.tools import pyout
+from src.utils.tools import pyout, prng
 
 
 class AbstractCellSimulation(ABC):
@@ -35,11 +40,11 @@ class AbstractCellSimulation(ABC):
         class will only need a constructor that assembles the cells
         """
         self.seed = None
-        self.node_list = []
+        self.node_list: List[Node] = []
         self.next_node_id = 0
         self.element_list = []
         self.next_element_id = 0
-        self.cell_list = []
+        self.cell_list: List[AbstractCell] = []
         self.next_cell_id = 0
 
         self.stochastic_jiggle = True  # Brownian noise?
@@ -68,7 +73,7 @@ class AbstractCellSimulation(ABC):
         # container so each type of data can be given a meaningful name
         self.sim_data = {}
 
-        self.boxes = None
+        self.boxes: SpacePartition = None
 
         self.using_boxes = True
 
@@ -117,11 +122,27 @@ class AbstractCellSimulation(ABC):
         if self.using_boxes:
             self.generate_neighbourhood_based_forces()
 
+        self.make_nodes_move()
 
-        pyout()
-        pyout()
+        # Division must occur after movement
+        self.make_cells_divide()
 
-        raise TodoException
+        self.kill_cells()
+
+        self.modify_simulation_state()
+
+        self.make_cells_age()
+
+        self.step += 1
+        self.t = self.step * self.dt
+
+        self.store_data()
+
+        if self.write_to_file:
+            self.write_data()
+
+        if self.is_stopping_condition_met():
+            self.stopped = True
 
     def n_time_steps(self, n):
         """
@@ -134,10 +155,12 @@ class AbstractCellSimulation(ABC):
             # Do all the calculations
             self.next_time_step()
 
-            pyout()
-            pyout()
+            if self.step % 1000 == 0:
+                print(f"Time = {self.t:.3f} hours")
 
-        raise TodoException
+            if self.stopped:
+                print(f"Stopping condition met at t={self.t:.3f}")
+                break
 
     def run_to_time(self, t):
         """
@@ -182,14 +205,33 @@ class AbstractCellSimulation(ABC):
         for force in self.neighbourhood_based_forces:
             force.add_neighbourhood_based_forces(self.node_list, self.boxes)
 
-        raise TodoException
-
     def make_nodes_move(self):
         """
 
         :return:
         """
-        raise TodoException
+        for n in self.node_list:
+            eta = n.eta
+            force = n.force
+
+            if self.stochastic_jiggle:
+                # Add in a tiny amount of stochasticity to the force calculation to nudge it out
+                # of unstable equilibria
+
+                # Make a random direction vector
+                v = tensor([prng() - 0.5, prng() - 0.5])
+                v = v / v.norm()
+
+                # Add the random vector, and make sure that it is orders of magnitude smaller
+                # than the actual force
+                force += v * self.epsilon
+
+            new_position = n.position + self.dt / eta * force
+
+            n.move_node(new_position)
+
+            if self.using_boxes:
+                self.boxes.update_box_for_node(n)
 
     def adjust_node_position(self, n, new_pos):
         """
@@ -210,7 +252,14 @@ class AbstractCellSimulation(ABC):
         Call the divide process, and update the lists
         :return:
         """
-        raise TodoException
+        new_cells: List[AbstractCell] = []
+        new_elements: List[Element] = []
+        new_nodes: List[Node] = []
+        for c in self.cell_list:
+            if c.is_ready_to_divide():
+                raise TodoException
+
+        self.add_new_cells(new_cells, new_elements, new_nodes)
 
     def add_new_cells(self, new_cells, new_elements, new_nodes):
         """
@@ -221,14 +270,33 @@ class AbstractCellSimulation(ABC):
         :param new_nodes:
         :return:
         """
-        raise TodoException
+        for n in new_nodes:
+            raise TodoException
+            n.id = self._get_next_node_id()
+            if self.using_boxes:
+                self.boxes.put_node_in_box(n)
+
+        for e in new_elements:
+            raise TodoException
+            # Debug: element id points to nodes rather than own id
+            # e.id = self._get_next_element_id()
+            if self.using_boxes and not e.internal:
+                self.boxes.put_element_in_boxes(e)
+
+        for nc in new_cells:
+            raise TodoException
+
+        self.cell_list.extend(new_cells)
+        self.element_list.extend(new_elements)
+        self.node_list.extend(new_nodes)
 
     def make_cells_age(self):
         """
 
         :return:
         """
-        raise TodoException
+        for c in self.cell_list:
+            c.age_cell(self.dt)
 
     def add_cell_based_force(self, f: AbstractCellBasedForce):
         """
@@ -323,21 +391,24 @@ class AbstractCellSimulation(ABC):
 
         :return:
         """
-        raise TodoException
+        for data_store in self.data_stores:
+            data_store.store_data(self)
 
     def write_data(self):
         """
 
         :return:
         """
-        raise TodoException
+        for data_writer in self.data_writers:
+            data_writer.write_data(self)
 
     def modify_simulation_state(self):
         """
 
         :return:
         """
-        raise TodoException
+        for modifier in self.simulation_modifiers:
+            modifier.modify_simulation(self)
 
     def kill_cells(self):
         """
@@ -348,7 +419,15 @@ class AbstractCellSimulation(ABC):
         DynamicLayer is done take some time to fix this up for SquareCellJoined
         :return:
         """
-        raise TodoException
+
+        for killer in self.tissue_level_killers:
+            killer.kill_cells(self)
+
+        kill_list: List[AbstractCell] = []
+        for killer in self.cell_killers:
+            kill_list.extend(killer.make_kill_list(self.cell_list))
+
+        self.process_cells_to_remove(kill_list)
 
     def process_cells_to_remove(self, kill_list):
         """
@@ -356,14 +435,21 @@ class AbstractCellSimulation(ABC):
         :param kill_list:
         :return:
         """
-        raise TodoException
+        # Loop from the end
+        for c in reversed(kill_list):
+            raise TodoException
 
     def is_stopping_condition_met(self):
         """
 
         :return:
         """
-        raise TodoException
+        for stopping_condition in self.stopping_conditions:
+            if stopping_condition.check_stopping_condition():
+                return True
+        return False
+
+
 
     def get_num_cells(self):
         """
@@ -452,6 +538,9 @@ class AbstractCellSimulation(ABC):
         totalSteps = 0
         while totalSteps < n:
             self.n_time_steps(sm)
+            totalSteps += sm
+
+            # rendering
 
             pyout()
         pyout()
@@ -513,8 +602,10 @@ class AbstractCellSimulation(ABC):
 
         :return:
         """
-        yield self.next_node_id
+        ou = self.next_node_id
         self.next_node_id += 1
+        return ou
+
         # raise TodoException
 
     def _get_next_element_id(self):
@@ -529,8 +620,8 @@ class AbstractCellSimulation(ABC):
 
         :return:
         """
-        ii = self.next_node_id
-        self.next_node_id += 1
+        ii = self.next_cell_id
+        self.next_cell_id += 1
         return ii
 
     def _add_nodes_to_list(self, list_of_nodes):

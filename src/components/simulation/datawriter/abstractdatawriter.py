@@ -1,5 +1,8 @@
 from abc import abstractmethod, ABC
 
+from src.utils.errors import TodoException
+from src.utils.tools import pyout
+
 
 class AbstractDataWriter(ABC):
     """
@@ -67,13 +70,19 @@ class AbstractDataWriter(ABC):
         pass
 
     def write_data(self, t):
-        raise NotImplementedError
+        if t.step % self.sampling_multiple == 0:
+            if not self.full_path_made:
+                self.make_full_path()
+                self.full_path_made = True
+
+            pyout()
+            raise TodoException
 
     def write_to_multiple_files(self):
-        raise NotImplementedError
+        raise TodoException
 
     def write_to_single_file(self):
-        raise NotImplementedError
+        raise TodoException
 
     def make_full_path(self):
-        raise NotImplementedError
+        raise TodoException

@@ -6,6 +6,7 @@ from numpy import pi
 from torch import cos, sin, Tensor
 
 from src.utils.errors import TodoException
+from src.utils.tools import pyout
 
 
 class Polyshape:
@@ -56,7 +57,7 @@ def nsidedpoly(N: int, mode: Union[None, str] = None, arg=1):
     """
     if mode == 'radius':
         x = cos(torch.arange(0, 2 * pi, 2 * pi / N)) * arg
-        y = sin(torch.arange(0, 2 * pi, 2 * pi / N,)) * arg
+        y = sin(torch.arange(0, 2 * pi, 2 * pi / N, )) * arg
         return Polyshape(x=x, y=y)
     elif mode == 'centre':
         raise TodoException
@@ -66,3 +67,34 @@ def nsidedpoly(N: int, mode: Union[None, str] = None, arg=1):
 
 def polyarea(x: Tensor, y: Tensor):
     return 0.5 * torch.abs(torch.dot(x, y.roll(1)) - torch.dot(y, x.roll(1)))
+
+
+def inpolygon(x, y, poly, pause=False):
+    """
+    See https://www.geeksforgeeks.org/how-to-check-if-a-given-point-lies-inside-a-polygon/ and
+    https://stackoverflow.com/questions/36399381/whats-the-fastest-way-of-checking-if-a-point-is-inside-a-polygon-in-python
+    :param x:
+    :param y:
+    :param poly:
+    :return:
+    """
+    if pause:
+        pyout()
+
+
+    n = len(poly)
+    inside = False
+    xints = 0.
+    p1x, p1y = poly[0]
+    for i in range(1, n + 1):
+        p2x, p2y = poly[i % n]
+        if min(p1y, p2y) < y <= max(p1y, p2y) and x <= max(p1x, p2x):
+            if p1y != p2y:
+                # where does the horizontal line
+                xints = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
+            if p1x == p2x or x <= xints:
+                inside = not inside
+            if x == xints:
+                return True
+        p1x, p1y = p2x, p2y
+    return inside

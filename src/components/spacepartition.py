@@ -1,6 +1,7 @@
 from math import floor
-from typing import List
+from typing import List, Tuple
 
+import numpy as np
 import torch
 from torch import Tensor, tensor
 
@@ -8,6 +9,7 @@ from src.components.cell.element import Element
 from src.components.node.node import Node
 from src.utils.cantrips import as_numpy
 from src.utils.errors import TodoException
+from src.utils.polyshapes import inpolygon
 from src.utils.tools import pyout
 
 
@@ -97,7 +99,33 @@ class SpacePartition:
             b = self.assemble_candidate_elements(n, r)
         else:
             raise TodoException
-        raise TodoException
+
+        neighbours: List[Element] = []
+
+        for e in b:
+            u = e.get_vector_1_to_2()
+            v = e.get_outward_normal()
+
+            # Make box around element; determine if node is in that box
+            n1 = e.node_1
+            n2 = e.node_2
+
+            p1 = n1.position + v * r
+            p2 = n1.position - v * r
+            p3 = n2.position - v * r
+            p4 = n2.position + v * r
+
+            # x, y = torch.chunk(torch.stack((p1, p2, p3, p4), dim=0), 2, dim=1)
+            # x, y = x.squeeze(1), y.squeeze(1)
+
+            poly = torch.stack((p1, p2, p3, p4), dim=0)
+
+            inside = inpolygon(n.x, n.y, poly)
+
+            if inside:
+                neighbours.append(e)
+
+        return neighbours
 
     def get_neighbouring_nodes(self, nl, r):
         """
@@ -144,7 +172,10 @@ class SpacePartition:
         :param r:
         :return:
         """
-        b: List[Element] = self.get_element_box_from_node(n)
+        # if n.id == 2:
+        #     pyout()
+
+        b: List[Element] = [e for e in self.get_element_box_from_node(n)]
 
         # Then check if the node is near a boundary
         # Need to decide if the process of check is more effort than just taking the adjacent
@@ -171,7 +202,19 @@ class SpacePartition:
                 and floor(n.y / self.dy) != floor((n.y + r) / self.dy)):  # right top
             b.extend(self.get_adjacent_element_box_from_node(n, [1, 1]))
 
-        raise TodoException
+        # Remove duplicates (elements can be in multiple boxes)
+        b = self.quick_unique(b)
+
+        # Remove nodes own elements
+        b = sorted(list(set(b) - set(n.element_list)), key=lambda x: x.id)
+
+        # Remove elements from the cell the node is in. It does not interact with them except
+        # indirectly via a volume force
+
+        for c in n.cell_list:
+            b = sorted(list(set(b) - set(c.element_list)), key=lambda x: x.id)
+
+        return b
 
     def assemble_candidate_nodes(self, n, r):
         """
@@ -188,9 +231,9 @@ class SpacePartition:
         :param b:
         :return:
         """
-        raise TodoException
+        return sorted(list(set(b)), key=lambda x: x.id)
 
-    def put_node_in_box(self, n):
+    def put_node_in_box(self, n: Node):
         """
 
         :param n:
@@ -199,7 +242,7 @@ class SpacePartition:
 
         q, i, j = self.get_quadrant_and_indices(n.x, n.y)
 
-        return q, i, j
+        self.insert_node(q, i, j, n)
 
     def put_element_in_boxes(self, e: Element):
         """
@@ -208,12 +251,15 @@ class SpacePartition:
         :param e:
         :return:
         """
+
         n1 = e.node_1
         n2 = e.node_2
 
         Q, I, J = self.get_box_indices_between_nodes(n1, n2)
 
         for ii in range(Q.size(0)):
+            q, i, j = Q[ii], I[ii], J[ii]
+
             self.insert_element(Q[ii], I[ii], J[ii], e)
 
     def get_node_box_from_node(self, n):
@@ -234,6 +280,7 @@ class SpacePartition:
         q, i, j = self.get_quadrant_and_indices(n.x, n.y)
 
         try:
+
             return self.elements_Q[q][i][j]
         except KeyError:
             raise KeyError(f"Elements don't exist where expected in the partition (q{q}, ({i}, "
@@ -248,6 +295,7 @@ class SpacePartition:
                           a is applied to I and b is applied to J
         :return:
         """
+
         a, b = direction
         q, i, j = self.get_quadrant_and_indices(n.x, n.y)
         I, J = self.convert_to_global(q, i, j)
@@ -270,6 +318,10 @@ class SpacePartition:
         :param direction:
         :return:
         """
+
+        if n.id == 2 and direction == [0, -1]:
+            pyout()
+
         q, i, j = self.get_adjacent_indices_from_node(n, direction)
 
         try:
@@ -316,14 +368,15 @@ class SpacePartition:
         """
         raise TodoException
 
-    def get_box_indices_between_nodes_previous_current(self, n1, n2):
+    def get_box_indices_between_nodes_previous_current(self, n1: Node, n2: Node):
         """
         Given two nodes, we want all the indices between n1s previous and n2s current positions
         :param n1:
         :param n2:
         :return:
         """
-        raise TodoException
+
+        return self.get_box_indices_between_points(n1.previous_position, n2.position)
 
     def make_element_box_list(self, q1, i1, j1, q2, i2, j2):
         """
@@ -381,13 +434,27 @@ class SpacePartition:
 
         return ql, il, jl
 
-    def update_box_for_node(self, n):
+    def update_box_for_node(self, n: Node):
         """
 
         :param n:
         :return:
         """
-        raise TodoException
+        qn, in_, jn = self.get_quadrant_and_indices(n.x, n.y)
+        qo, io_, jo = self.get_quadrant_and_indices(*n.previous_position)
+
+        if not (qn == qo and in_ == io_ and jn == jo):
+            # The given node is in a different box compared to previous timestep/position,
+            # so need to do some adjusting.
+
+            self.insert_node(qn, in_, jn, n)
+
+            self.nodes_Q[qo][io_][jo].remove(n)
+
+            # Also need to adjust the elements
+            self.update_boxes_for_elements_using_node(n)
+
+
 
     def update_box_for_node_adjusted(self, n):
         """
@@ -398,7 +465,7 @@ class SpacePartition:
         """
         raise TodoException
 
-    def update_boxes_for_elements_using_node(self, n1):
+    def update_boxes_for_elements_using_node(self, n1: Node):
         """
         This function will be used as each node is moved As such, we know the node n1 has _just_
         moved therefore we need to look at the current position and the previous position to see
@@ -414,7 +481,17 @@ class SpacePartition:
         :param n1:
         :return:
         """
-        raise TodoException
+
+        for e in n1.element_list:
+            if not e.is_element_internal():
+                n2 = e.get_other_node(n1)
+
+                qn, in_, jn = self.get_box_indices_between_nodes(n1, n2)
+                qo, io_, jo = self.get_box_indices_between_nodes_previous_current(n1, n2)
+
+                self.move_element_to_new_boxes(torch.stack((qo, io_, jo), dim=1),
+                                               torch.stack((qn, in_, jn), dim=1), e)
+
 
     def update_boxes_for_elements_using_node_adjusted(self, n1):
         """
@@ -433,7 +510,7 @@ class SpacePartition:
         """
         raise TodoException
 
-    def move_element_to_new_boxes(self, old, new, e):
+    def move_element_to_new_boxes(self, old: Tensor, new: Tensor, e: Element):
         """
 
         :param old: the set of boxes the element used to be in
@@ -441,9 +518,28 @@ class SpacePartition:
         :param e:
         :return:
         """
-        raise TodoException
 
-    def insert_node(self, q, i, j, n):
+        ql, il, jl = [v.squeeze(-1) for v in new.chunk(3, dim=-1)]
+        qp, ip, jp = [v.squeeze(-1) for v in old.chunk(3, dim=-1)]
+
+        L = new.unsqueeze(1).expand(new.size(0), old.size(0), -1)
+        P = old.unsqueeze(0).expand(new.size(0), old.size(0), -1)
+
+        EQ = ~torch.all(torch.eq(L, P), dim=-1)
+
+        # Get the unique new boxes
+        J = torch.all(EQ, dim=1).nonzero().squeeze(0)
+
+        for ii in J:
+            self.insert_element(ql[ii], il[ii], jl[ii], e)
+
+        # Get the old boxes and the indices to remove
+        J = torch.all(EQ, dim=0).nonzero().squeeze(0)
+
+        for ii in J:
+            self.remove_element_from_box(qp[ii], ip[ii], jp[ii], e)
+
+    def insert_node(self, q: Tensor, i: Tensor, j: Tensor, n: Node):
         """
         This is the sensible way to do this, but it doesn't always work properly
         if i > size(obj.nodesQ{q},1) || j > size(obj.nodesQ{q},2)
@@ -457,7 +553,18 @@ class SpacePartition:
         :param n:
         :return:
         """
-        raise TodoException
+        q, i, j = [int(val.item()) for val in (q, i, j)]
+        try:
+            if n in self.nodes_Q[q][i][j]:
+                pyout(f"Node {n} already in elements_Q[{q}][{i}][{j}]")
+            else:
+                self.nodes_Q[q][i][j].append(n)
+        except IndexError:
+            while len(self.nodes_Q[q]) <= i:
+                self.nodes_Q[q].append([])
+            while len(self.nodes_Q[q][i]) <= j:
+                self.nodes_Q[q][i].append([])
+            self.nodes_Q[q][i][j].append(n)
 
     def insert_element(self, q, i, j, e):
         """
@@ -494,7 +601,7 @@ class SpacePartition:
         :param e:
         :return:
         """
-        raise TodoException
+        self.elements_Q[q][i][j].remove(e)
 
     def remove_node_from_partition(self, n):
         """
@@ -557,7 +664,6 @@ class SpacePartition:
 
         q = self.get_quadrant(x, y)
         i, j = self.get_indices(x, y)
-
         return q, i, j
 
     def get_global_indices(self, x, y):
@@ -608,6 +714,7 @@ class SpacePartition:
         :param J:
         :return:
         """
+
         q = self.get_quadrant(I, J)
 
         # Note the additional translation for quadrants 1, 2, and 3 due to the difference between
@@ -652,13 +759,16 @@ class SpacePartition:
         :param y:
         :return:
         """
+
         if x.ndim:
-            q = torch.zeros(x.size())
+            q = torch.zeros(x.size(), dtype=torch.int64)
             q = torch.where((x >= 0) & (y < 0), torch.full_like(q, 1), q)
             q = torch.where((x < 0) & (y < 0), torch.full_like(q, 2), q)
             q = torch.where((x < 0) & (y >= 0), torch.full_like(q, 3), q)
+
             return q
         else:
+
             if x >= 0:
                 if y >= 0:
                     return tensor(0)
@@ -669,3 +779,10 @@ class SpacePartition:
                     return tensor(2)
                 else:
                     return tensor(3)
+
+    def debug(self):
+        try:
+            if len(self.elements_Q[1][1][0]) >= 22:
+                pyout('Help')
+        except IndexError:
+            pass

@@ -86,7 +86,7 @@ class AbstractCell(ABC):
         return self.cell_data['target_perimeter'].get_data(self)
 
     def is_ready_to_divide(self):
-        raise TodoException
+        return self.cell_cycle_model.is_ready_to_divide()
 
     def add_cell_data(self, d):
         """
@@ -98,7 +98,10 @@ class AbstractCell(ABC):
             self.cell_data[d_.name] = d_
 
     def age_cell(self, dt):
-        raise TodoException
+        # This will be done at the end of the time step
+        self.age += dt
+        self.cell_cycle_model.age_cell_cycle(dt)
+
 
     def get_age(self):
         return self.cell_cycle_model.get_age()

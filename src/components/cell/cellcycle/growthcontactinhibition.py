@@ -65,7 +65,12 @@ class GrowthContactInhibition(AbstractCellCycleModel):
         :param dt:
         :return:
         """
-        raise TodoException
+        self.age += dt
+
+        if self.age < self.pause_phase_duration:
+            self.colour = self.pause_colour
+        else:
+            raise TodoException
 
     def duplicate(self):
         """
@@ -79,7 +84,7 @@ class GrowthContactInhibition(AbstractCellCycleModel):
 
         :return:
         """
-        raise TodoException
+        return self.pause_phase_duration + self.growth_phase_duration < self.get_age()
 
     def get_growth_phase_fraction(self):
         """

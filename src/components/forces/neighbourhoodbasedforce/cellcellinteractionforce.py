@@ -1,10 +1,14 @@
 from typing import List, Union
 
+import torch
+from torch import tensor
+
 from src.components.forces.neighbourhoodbasedforce.abstractnodeelementforce import \
     AbstractNodeElementForce
 from src.components.node.node import Node
 from src.components.spacepartition import SpacePartition
 from src.utils.errors import TodoException
+from src.utils.tools import pyout
 
 
 class CellCellInteractionForce(AbstractNodeElementForce):
@@ -117,8 +121,36 @@ class CellCellInteractionForce(AbstractNodeElementForce):
                 e_list = p.get_neighbouring_elements(n, self.d_limit)
                 n_list: List[Node] = []
 
+            for e in e_list:
+                # A unit vector tangent to the edge
+                u = e.get_vector_1_to_2()
 
-        raise TodoException
+                # We arbitrarily choose an end point on the edge to make a vector going from edge
+                # to node, then project it onto the tangent vector to find the point of action
+                n1ton = n.position - e.node_1.position
+                n1toA = u * torch.dot(n1ton, u)
+
+                if self.using_polys:
+                    # We use the outward pointing normal to orient the edge
+                    v = e.get_outward_normal()
+                    # ... and project the arbitrary vector onto the outward normal to find the
+                    # signed distance between edge and node
+                    x = torch.dot(n1ton, v)
+
+                    # Need to check if node-edge interaction pair is between a node and edge of
+                    # the same cell
+                    internal = any(item in e.cell_list for item in n.cell_list)
+
+                    # The negative sign is necessary because v points away from the edge and we
+                    # need to point towards the edge
+                    Fa = -self.force_law(x, internal) * v
+                else:
+                    raise TodoException
+
+                self.apply_forces_to_node_and_element(n, e, Fa, n1toA)
+
+            if self.use_node_node_interactions:
+                raise TodoException
 
     def force_law(self, x, internal):
         """
@@ -128,4 +160,20 @@ class CellCellInteractionForce(AbstractNodeElementForce):
         :param internal:
         :return:
         """
-        raise TodoException
+
+        if not internal:
+            # The interaction is between separate cells
+            if self.d_asymptote < x and x < self.d_separation:
+                # raise TodoException
+                Fa = self.spring_rate_repulsion \
+                     * torch.log((self.d_separation - self.d_asymptote) / (x - self.d_asymptote))
+                return Fa
+            elif self.d_separation <= x and x < self.d_limit:
+                Fa = self.spring_rate_attraction \
+                     * ((self.d_separation - x) / (self.d_separation - self.d_asymptote)) \
+                     * torch.exp(self.c * (self.d_separation - x) / self.d_separation)
+                return Fa
+            else:
+                tensor(0.)
+        else:
+            raise TodoException

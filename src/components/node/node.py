@@ -1,4 +1,5 @@
 import warnings
+from typing import List
 
 import torch
 from torch import Tensor
@@ -26,7 +27,7 @@ class Node:
         # This will be circular - each element will have two nodes. Each node can be part of
         # multiple elements, similarly for cells
         self.element_list = []
-        self.cell_list = []
+        self.cell_list: List = []
         self.is_top_node = None
 
         # Each node stores its local drag coefficient, so we can distinguish between different
@@ -54,7 +55,10 @@ class Node:
         :param pos:
         :return:
         """
-        raise TodoException
+        self.__new_position(pos)
+        # Reset the force for the next time step
+        self.previous_force = self.force
+        self.force = torch.zeros_like(self.force)
 
     def adjust_position(self, pos):
         """
@@ -118,7 +122,12 @@ class Node:
         :param pos:
         :return:
         """
-        raise TodoException
+        self.previous_position = self.position
+        self.position = pos
+        self.x, self.y = pos
+
+    def __str__(self):
+        return f"Node {self.id}"
 
 
 if __name__ == '__main__':

@@ -1,4 +1,5 @@
 import torch
+from torch import tensor
 
 from src.components.node.node import Node
 from src.utils.errors import TodoException
@@ -31,6 +32,10 @@ class Element:
         :param node_2:
         :param id:
         """
+        # todo remove for debug. it's just a reminder
+        if id == -1:
+            raise ValueError("Update element id in MATLAB implementation")
+
         self.id = id
 
         # The 'total drag' for the element at the centre of drag. This will be constant for an
@@ -55,7 +60,7 @@ class Element:
         self.minimum_length = 0.2
 
         self.node_list = [self.node_1, self.node_2]
-        self.cell_list = None
+        self.cell_list = []
 
         self.internal = False
 
@@ -106,13 +111,18 @@ class Element:
         See constructor for discussion about why this is the outward normal
         :return:
         """
-        raise TodoException
+        u = self.get_vector_1_to_2()
+        return u @ tensor([[0., -1.], [1., 0.]])
 
     def get_mid_point(self):
         raise TodoException
 
-    def get_other_node(self, node):
-        raise TodoException
+    def get_other_node(self, node: Node):
+        if node == self.node_1:
+            return self.node_2
+        elif node == self.node_2:
+            return self.node_1
+        raise ValueError(f"Node {node.id} is not in Element {self.id}")
 
     def swap_nodes(self):
         """
@@ -156,3 +166,6 @@ class Element:
 
     def is_element_internal(self):
         return self.internal
+
+    def __str__(self):
+        return f"Element {self.id}"

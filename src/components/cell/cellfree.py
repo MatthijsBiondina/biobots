@@ -36,10 +36,11 @@ class CellFree(AbstractCell):
             # nowhere)
 
             for ii in range(len(node_list)):
-                e = Element(node_list[ii], node_list[(ii + 1) % len(node_list)], -1)
+                e = Element(node_list[ii], node_list[(ii + 1) % len(node_list)],
+                            f"{node_list[ii].id}_{node_list[(ii + 1) % len(node_list)].id}")
                 self.element_list.append(e)
-                node_list[ii].cell_list = self
-                e.cell_list = self
+                node_list[ii].cell_list.append(self)
+                e.cell_list.append(self)
         else:
             # This case is mainly used for dividing cells, but may also be used to make new cells
             # at the beginning of a simulation
