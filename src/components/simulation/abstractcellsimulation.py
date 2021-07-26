@@ -1,12 +1,14 @@
 # import random
+import time
 from abc import abstractmethod, ABC
-from typing import List
+from typing import List, Union
 
 import numpy
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
 from torch import tensor
+from tqdm import tqdm
 
 from src.components.cell.abstractcell import AbstractCell
 from src.components.cell.celldeath.abstractcellkiller import AbstractCellKiller
@@ -21,6 +23,7 @@ from src.components.forces.neighbourhoodbasedforce.abstractneighbourhoodbasedfor
 from src.components.forces.tissuebasedforce.abstracttissuebasedforce import \
     AbstractTissueBasedForce
 from src.components.node.node import Node
+from src.components.simulation.cuda_memory import CudaMemory
 from src.components.simulation.datastore.abstractdatastore import AbstractDataStore
 from src.components.simulation.datawriter.abstractdatawriter import AbstractDataWriter
 from src.components.simulation.modifiers.abstractsimulationmodifier import \
@@ -29,7 +32,8 @@ from src.components.simulation.stopping.abstractstoppingcondition import \
     AbstractStoppingCondition
 from src.components.spacepartition import SpacePartition
 from src.utils.errors import TodoException
-from src.utils.tools import pyout, prng
+from src.utils.plotting import render, Renderer
+from src.utils.tools import pyout, prng, poem
 
 
 class AbstractCellSimulation(ABC):
@@ -46,6 +50,7 @@ class AbstractCellSimulation(ABC):
         self.next_element_id = 0
         self.cell_list: List[AbstractCell] = []
         self.next_cell_id = 0
+        self.gpu_memory: Union[None, CudaMemory] = None
 
         self.stochastic_jiggle = True  # Brownian noise?
         self.epsilon = 0.0001  # Size of the jiggle force
@@ -153,7 +158,9 @@ class AbstractCellSimulation(ABC):
 
         for ii in range(n):
             # Do all the calculations
+            # t0 = time.time()
             self.next_time_step()
+            # pyout(time.time() - t0)
 
             if self.step % 1000 == 0:
                 print(f"Time = {self.t:.3f} hours")
@@ -184,7 +191,7 @@ class AbstractCellSimulation(ABC):
         :return:
         """
         for force in self.cell_based_forces:
-            force.add_cell_based_forces(self.cell_list)
+            force.add_cell_based_forces(self.cell_list, self.gpu_memory)
 
     def generate_element_based_forces(self):
         """
@@ -449,8 +456,6 @@ class AbstractCellSimulation(ABC):
                 return True
         return False
 
-
-
     def get_num_cells(self):
         """
 
@@ -463,7 +468,7 @@ class AbstractCellSimulation(ABC):
 
         :return:
         """
-        raise TodoException
+        return len(self.element_list)
 
     def get_num_nodes(self):
         """
@@ -535,14 +540,18 @@ class AbstractCellSimulation(ABC):
         :return:
         """
 
-        totalSteps = 0
-        while totalSteps < n:
+        R = Renderer()
+
+        for ii in tqdm(range(0, n, sm)):
+            # while totalSteps < n:
             self.n_time_steps(sm)
-            totalSteps += sm
+
+            R.render(self.cell_list)
+
+            pyout(ii)
 
             # rendering
 
-            pyout()
         pyout()
 
         raise TodoException

@@ -1,3 +1,4 @@
+from src.components.simulation.abstractcellsimulation import AbstractCellSimulation
 from src.components.simulation.datawriter.abstractdatawriter import AbstractDataWriter
 from src.utils.errors import TodoException
 
@@ -10,6 +11,7 @@ class WriteSpatialState(AbstractDataWriter):
         :param sm:
         :param sub_dir:
         """
+        super().__init__()
         self._file_names = {'nodes', 'elements', 'cells'}
         self._subdirectory_structure = [sub_dir, 'SpatialState/']
         self.sampling_multiple = sm
@@ -32,10 +34,10 @@ class WriteSpatialState(AbstractDataWriter):
     def subdirectory_structure(self, value):
         self._subdirectory_structure = value
 
-    def gather_data(self, t):
+    def gather_data(self, t: AbstractCellSimulation):
         """
         The simulation t must have a simulation data object collating the complete spatial state
         :param t:
         :return:
         """
-        raise TodoException
+        self.data = t.sim_data['spatial_state'].get_data(t)

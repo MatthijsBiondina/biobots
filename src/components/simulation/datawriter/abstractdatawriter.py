@@ -1,3 +1,6 @@
+import csv
+import os
+import shutil
 from abc import abstractmethod, ABC
 
 from src.utils.errors import TodoException
@@ -27,7 +30,7 @@ class AbstractDataWriter(ABC):
         self.sampling_multiple = None
 
         # How many significant figures to store
-        self.precition = 5
+        self.precision = 5
 
         # A flag to determine if each time step will be written to a separate file, or all will
         # be written in a single file
@@ -69,20 +72,49 @@ class AbstractDataWriter(ABC):
         """
         pass
 
+    @abstractmethod
+    def gather_data(self, t):
+        pass
+
     def write_data(self, t):
+        """
+
+        :param t: AbstractCellSimulation
+        :return:
+        """
         if t.step % self.sampling_multiple == 0:
             if not self.full_path_made:
                 self.make_full_path()
                 self.full_path_made = True
 
-            pyout()
-            raise TodoException
+            self.gather_data(t)
+
+            self.time_point = t.t
+
+            if self.multiple_files:
+                raise TodoException
+            else:
+                self.write_to_single_file()
 
     def write_to_multiple_files(self):
         raise TodoException
 
     def write_to_single_file(self):
-        raise TodoException
+        for key in self.data:
+            with open(os.path.join(self.full_path, f"{key}.csv"), 'a+', newline='') as f:
+                writer = csv.writer(f, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+                D = self.data[key]
+                for d in D:
+                    if self.time_stamp_needed:
+                        writer.writerow([self.time_point] + [f"{r:.5f}" for r in d])
+                    else:
+                        writer.writerow([f"{r:.5f}" for r in d])
 
-    def make_full_path(self):
-        raise TodoException
+    def make_full_path(self, debug=True):
+        self.root_storage_location = './res/SimulationOutput'
+        self.full_path = os.path.join(self.root_storage_location,
+                                      'tmp' if debug else self.subdirectory_stucture)
+
+        if os.path.isdir(self.full_path):
+            shutil.rmtree(self.full_path)
+        os.makedirs(self.full_path)

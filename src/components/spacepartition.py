@@ -319,9 +319,6 @@ class SpacePartition:
         :return:
         """
 
-        if n.id == 2 and direction == [0, -1]:
-            pyout()
-
         q, i, j = self.get_adjacent_indices_from_node(n, direction)
 
         try:

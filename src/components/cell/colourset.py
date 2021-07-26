@@ -1,6 +1,10 @@
+from typing import Union
+
 import torch
 
 from src.utils.config import Config
+from src.utils.errors import TodoException
+from src.utils.tools import pyout
 
 
 class ColourSet:
@@ -30,13 +34,16 @@ class ColourSet:
         self.name_to_num = {key: value for value, key in enumerate(list(self.colour_map.keys()))}
         self.num_to_name = {value: key for key, value in self.name_to_num.items()}
 
-    def get_rgb(self, c):
+    def get_rgb(self, c: Union[str, int]):
         """
         returns the rgb vector
         :param c:
         :return:
         """
-        raise NotImplementedError
+        if type(c) == int:
+            c = self.num_to_name[c]
+
+        return self.colour_map[c]
 
     def get_number(self, c):
         """

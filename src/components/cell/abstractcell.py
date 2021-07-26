@@ -52,8 +52,9 @@ class AbstractCell(ABC):
     def delete(self):
         raise TodoException
 
-    def set_cell_cycle_model(self, v):
-        raise TodoException
+    def set_cell_cycle_model(self, v: AbstractCellCycleModel):
+        self.cell_cycle_model = v
+        v.containing_cell = self
 
     def get_cell_area(self):
         """
@@ -107,7 +108,7 @@ class AbstractCell(ABC):
         return self.cell_cycle_model.get_age()
 
     def get_colour(self):
-        raise TodoException
+        return self.cell_cycle_model.get_colour()
 
     def do_elements_cross(self, e1, e2):
         raise TodoException

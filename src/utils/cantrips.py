@@ -1,3 +1,4 @@
+import cupy
 from torch import Tensor
 import numpy as np
 
@@ -12,25 +13,24 @@ lcl = tensor_shapes({key: value for key, value in locals().items() if key != 'se
 """
 
 
-def array_shapes(loc):
-    loc = sorted(loc)
+def array_shapes(loc, ignore_key='__lcl', depth=0):
     ou = {}
-    for name, value in loc:
-        if isinstance(name, str) and name[0] == '_':
-            continue
-        if issubclass(type(value), np.ndarray):
-            ou[name] = tuple(value.shape)
+    if depth >= 8:
+        return ou
+    for name in loc:
+        value = loc[name]
+        if isinstance(value, np.ndarray) or isinstance(value, cupy._core.core.ndarray):
+            ou[name] = value.shape
         elif isinstance(value, dict):
-            ou[name] = array_shapes([(key, value[key]) for key in value])
-        elif (isinstance(value, tuple) or isinstance(value, list)) \
-                and any(issubclass(type(x), np.ndarray) for x in value):
-            as_dict = array_shapes([(ii, value[ii]) for ii in range(len(value))])
-            as_list = [None] * (max(as_dict.keys()) + 1)
-            for ii in as_dict.keys():
-                as_list[ii] = as_dict[ii]
-            ou[name] = as_list
+            ou[name] = tensor_shapes(value, depth=depth + 1)
+        else:
+            try:
+                loc_ = {key: val for key, val in value.__dict__.items()}
+                ou[name] = array_shapes(loc_, depth=depth + 1)
+            except AttributeError:
+                pass
 
-    return dict(sorted(ou.items()))
+    return {key: ou[key] for key in sorted(ou) if ou[key] != {} and key != ignore_key}
 
 
 def tensor_shapes(loc, ignore_key='__lcl', depth=0):

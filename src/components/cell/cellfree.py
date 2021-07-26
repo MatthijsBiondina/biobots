@@ -18,7 +18,7 @@ class CellFree(AbstractCell):
             element_list = None
         else:
             cycle, node_list, element_list, id_ = args
-        self.cell_cycle_model = cycle
+        self.set_cell_cycle_model(cycle)
         self.node_list = node_list
         self.id = id_
         self.ancestor_id = id_

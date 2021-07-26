@@ -1,9 +1,12 @@
+from math import ceil
+
 from src.components.cell.cellcycle.growthcontactinhibition import GrowthContactInhibition
 from src.components.forces.cellbasedforce.freecellperimeternormalisingforce import \
     FreeCellPerimeterNormalisingForce
 from src.components.forces.cellbasedforce.polygoncellgrowthforce import PolygonCellGrowthForce
 from src.components.forces.neighbourhoodbasedforce.cellcellinteractionforce import \
     CellCellInteractionForce
+from src.components.simulation.cuda_memory import CudaMemory
 from src.components.simulation.datawriter.writespatialstate import WriteSpatialState
 from src.components.simulation.freecellsimulation import FreeCellSimulation
 from src.components.simulation.simulationdata.spatialstate import SpatialState
@@ -48,10 +51,14 @@ class Spheroid(FreeCellSimulation):
         tension_energy = 1
 
         # Make nodes around a polygon
-        N = 10
-        X = [0, 1, 0, 1]
-        Y = [0, 0, 1, 1]
+        Ncells = 60
+        X, Y = [], []
+        for x in range(ceil(Ncells ** .5)):
+            for y in range(ceil(Ncells ** .5)):
+                X.append(x)
+                Y.append(y)
 
+        N = 10
         for i in range(len(X)):
             x = X[i]
             y = Y[i]
@@ -65,6 +72,8 @@ class Spheroid(FreeCellSimulation):
             self.cell_list.append(c)
 
         """ ADD THE FORCES """
+
+        self.gpu_state = CudaMemory(self.cell_list, self.element_list, self.node_list)
 
         # Cell growth force
         self.add_cell_based_force(PolygonCellGrowthForce(area_energy, perimeter_energy,
@@ -84,4 +93,4 @@ class Spheroid(FreeCellSimulation):
         path_name = f"Spheroid/t0{t0}gtg{tg}gs{s}gsreg{sreg}gf{f}gda{dAsym}gds{dSep}gdl{dLim}" \
                     f"ga{area_energy}gb{perimeter_energy}gt{tension_energy}g_seed{seed}g/"
         self.add_simulation_data(SpatialState())
-        self.add_data_writer(WriteSpatialState(20, path_name))
+        # self.add_data_writer(WriteSpatialState(20, path_name))

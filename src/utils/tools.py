@@ -33,14 +33,22 @@ def pretty_string(message: str, color=None, bold=False, underline=False):
     return ou
 
 
-def pyout(message = None):
+def poem(string):
+    if len(string) > 20:
+        return string[:20] + '...'
+    else:
+        return string + ' ' * (23 - len(string))
+
+
+def pyout(*message):
     """
     Print message preceded by traceback. I use this method to prevent rogue "print" statements
     during debugging
     :param message:
     :return:
     """
-    message = str(message)
+
+    message = ' '.join(str(m) for m in message)
     if Config.verbose:
         trace = traceback.extract_stack()[-2]
 
@@ -64,6 +72,6 @@ def prng(decimals=4):
         pseudo_random_state = (7 * pseudo_random_state) % 101
 
         ou += (pseudo_random_state % 10) * 10 ** -ii
-    ou = str(ou)[:decimals+2]
+    ou = str(ou)[:decimals + 2]
 
     return float(ou)

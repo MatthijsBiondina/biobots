@@ -2,6 +2,7 @@ from typing import List
 
 from src.components.cell.abstractcell import AbstractCell
 from src.components.forces.cellbasedforce.abstractcellbasedforce import AbstractCellBasedForce
+from src.components.simulation.cuda_memory import CudaMemory
 from src.utils.errors import TodoException
 from src.utils.tools import pyout
 
@@ -15,7 +16,7 @@ class FreeCellPerimeterNormalisingForce(AbstractCellBasedForce):
         """
         self.spring_rate = spring_rate
 
-    def add_cell_based_forces(self, cell_list: List[AbstractCell]):
+    def add_cell_based_forces(self, cell_list: List[AbstractCell], gpu: CudaMemory):
         """
         For each cell in the list, calculate the forces and add them to the nodes
         :param cell_list:

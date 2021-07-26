@@ -67,4 +67,4 @@ class AbstractCellCycleModel(ABC):
 
         :return:
         """
-        raise TodoException
+        return self.colour_set.get_rgb(self.colour)

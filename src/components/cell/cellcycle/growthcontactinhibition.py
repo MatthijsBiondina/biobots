@@ -1,5 +1,5 @@
 # import random
-
+from src.components.cell.abstractcell import AbstractCell
 from src.components.cell.cellcycle.abstractcellcyclemodel import AbstractCellCycleModel
 from src.utils.errors import TodoException
 from src.utils.tools import prng
@@ -70,7 +70,17 @@ class GrowthContactInhibition(AbstractCellCycleModel):
         if self.age < self.pause_phase_duration:
             self.colour = self.pause_colour
         else:
-            raise TodoException
+            c: AbstractCell = self.containing_cell
+            if c.get_cell_area() < self.growth_trigger_fraction * c.new_cell_target_area:
+                """
+                If it's too compressed, extend the pause phase. Since this already assumes the cell is at 
+                the end of pause phase, this will occur when the cell is ready to start growing, except for 
+                being to compressed
+                """
+                self.pause_phase_duration += self.dt
+                self.colour = self.inhibited_colour
+            else:
+                self.colour = self.growth_colour
 
     def duplicate(self):
         """
@@ -94,7 +104,7 @@ class GrowthContactInhibition(AbstractCellCycleModel):
         if self.age < self.pause_phase_duration:
             return 0
         else:
-            raise TodoException
+            return (self.age - self.pause_phase_duration) / self.growth_phase_duration
 
     def set_pause_phase_duration(self, p):
         """

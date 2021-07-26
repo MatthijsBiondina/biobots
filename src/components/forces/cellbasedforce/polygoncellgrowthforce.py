@@ -4,6 +4,7 @@ import torch
 
 from src.components.cell.abstractcell import AbstractCell
 from src.components.forces.cellbasedforce.abstractcellbasedforce import AbstractCellBasedForce
+from src.components.simulation.cuda_memory import CudaMemory
 from src.utils.errors import TodoException
 from src.utils.tools import pyout
 
@@ -18,7 +19,7 @@ class PolygonCellGrowthForce(AbstractCellBasedForce):
         self.perimeter_energy_parameter = perimeter_P
         self.surface_tension_energy_parameter = tension_P
 
-    def add_cell_based_forces(self, cell_list: List[AbstractCell]):
+    def add_cell_based_forces(self, cell_list: List[AbstractCell], gpu_memory: CudaMemory):
         """
         For each cell in the list, calculate the forces and add them to the nodes
         :param cell_list:

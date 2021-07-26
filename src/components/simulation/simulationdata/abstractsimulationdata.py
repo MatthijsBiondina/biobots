@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from src.components.simulation.abstractcellsimulation import AbstractCellSimulation
+
 
 class AbstractSimulationData(ABC):
     def __init__(self):
@@ -52,10 +54,17 @@ class AbstractSimulationData(ABC):
         """
         pass
 
-    def get_data(self, t):
+    def get_data(self, t: AbstractCellSimulation):
         """
 
         :param t:
         :return:
         """
-        raise NotImplementedError
+
+        if self.time_stamp == t.t:
+            return self.data
+        else:
+            self.time_stamp = t.t
+            self.calculate_data(t)
+            return self.data
+
