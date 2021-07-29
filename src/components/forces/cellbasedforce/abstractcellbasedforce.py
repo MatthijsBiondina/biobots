@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from src.components.simulation.cuda_memory import CudaMemory
+
 
 class AbstractCellBasedForce(ABC):
     """
@@ -8,5 +10,5 @@ class AbstractCellBasedForce(ABC):
     """
 
     @abstractmethod
-    def add_cell_based_forces(self, cell_list: list):
+    def add_cell_based_forces(self, cell_list: list, gpu: CudaMemory):
         pass

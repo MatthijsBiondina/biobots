@@ -1,8 +1,11 @@
+import sys
+import time
 from typing import List
 
+import cupy as cp
 from src.components.cell.abstractcell import AbstractCell
 from src.components.forces.cellbasedforce.abstractcellbasedforce import AbstractCellBasedForce
-from src.components.simulation.cuda_memory import CudaMemory
+from src.components.simulation.cuda_memory import CudaMemory, synchronize
 from src.utils.errors import TodoException
 from src.utils.tools import pyout
 
@@ -16,15 +19,20 @@ class FreeCellPerimeterNormalisingForce(AbstractCellBasedForce):
         """
         self.spring_rate = spring_rate
 
+        # CUDA placeholders
+        self.spring_rate_cuda = cp.float32(spring_rate)
+
     def add_cell_based_forces(self, cell_list: List[AbstractCell], gpu: CudaMemory):
         """
         For each cell in the list, calculate the forces and add them to the nodes
         :param cell_list:
         :return:
         """
-        for c in cell_list:
-            self.apply_spring_force(c)
+        if gpu.EXEC_CPU:
+            for c in cell_list:
+                self.apply_spring_force(c)
 
+        self.apply_spring_force_cuda(gpu)
 
     def apply_spring_force(self, c: AbstractCell):
         """
@@ -44,3 +52,12 @@ class FreeCellPerimeterNormalisingForce(AbstractCellBasedForce):
 
             e.node_1.add_force_contribution(-force)
             e.node_2.add_force_contribution(force)
+
+    def apply_spring_force_cuda(self, gpu: CudaMemory):
+        p = gpu.C_perimeter / gpu.C_node_idxs.shape[1]
+        unit_vector_1_to_2 = gpu.vector_1_to_2
+        l = gpu.element_length
+        mag = self.spring_rate_cuda * ((p @ gpu.cell2element) - l)
+        force = unit_vector_1_to_2 * mag[:, None]
+        gpu.N_for[gpu.E_node_1] -= force
+        gpu.N_for[gpu.E_node_2] += force

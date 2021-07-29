@@ -38,8 +38,8 @@ class AbstractCell(ABC):
         # A collection objects for calculating data about the cell stored in a dict
         self.cell_data = {}
 
-        # By default, the type is 1, matching a general epithelial cell
-        self.cell_type = 1
+        # By default, the type is 0, matching a general epithelial cell
+        self.cell_type = 0
 
     @abstractmethod
     def divide(self):

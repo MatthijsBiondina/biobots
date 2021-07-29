@@ -10,143 +10,79 @@ from numba import cuda, vectorize
 from numba.cuda import grid
 
 from src.components.cell.abstractcell import AbstractCell
+from src.components.simulation.cuda_memory import CudaMemory, synchronize
 from src.utils.tools import pyout
+import pygame
+from pygame.locals import *
+from pygame import gfxdraw
 
 
 class Renderer:
-    def __init__(self, figsize=(480, 360)):
+    BACKGROUND = (45, 41, 131)
+    CELL_COLORS = [(0, 119, 59),
+                   (8, 171, 154),
+                   (116, 206, 235),
+                   (226, 202, 129),
+                   (215, 98, 119),
+                   (179, 68, 149),
+                   (145, 30, 83)]
+
+    def __init__(self, gpu: CudaMemory, figsize=(1080, 720)):
+        self.gpu = gpu
         self.figsize = figsize
-        self.canvas = cuda.to_device(np.full(figsize[::-1] + (3,), 1.))
 
-        self.n_cells = None
-        self.N = None
+        pygame.init()
 
-    def render(self, cell_list: List[AbstractCell]):
-        if self.n_cells is None or len(cell_list) != self.n_cells:
-            self.n_cells = len(cell_list)
-            self.N = cuda.to_device(np.array([len(c.node_list) for c in cell_list]))
+        self.fps = 60
+        self.clock = pygame.time.Clock()
 
+        self.display = pygame.display.set_mode(figsize)
+        self.display.fill(self.BACKGROUND)
+        pygame.display.set_caption("BioBots")
 
-        P = np.zeros((len(cell_list), max(self.N), 2))
-        for ii, A in enumerate(
-                [np.stack([np.array(n.position.numpy()) for n in c.node_list]) for c in cell_list]):
-            P[ii] = A
-        pyout(f"{time.time() - t0:.4f} ms")
+        self.ctypes = cp.asnumpy(self.gpu.C_type).astype(int)
 
-        sys.exit(0)
-        return
+    def render(self):
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
 
-    def _get_inputs(self, P):
-        xmin, xmax = np.min(P[:, :, 0]), np.max(P[:, :, 0])
-        ymin, ymax = np.min(P[:, :, 1]), np.max(P[:, :, 1])
-        scale = max((xmax - xmin) / self.figsize[0], (ymax - ymin) / self.figsize[1])
-        xmin_ = (xmax - 0.5 * (xmax - xmin)) - 0.5 * self.figsize[0] * scale
-        xmax_ = (xmax - 0.5 * (xmax - xmin)) + 0.5 * self.figsize[0] * scale
-        ymin_ = (ymax - 0.5 * (ymax - ymin)) - 0.5 * self.figsize[1] * scale
-        ymax_ = (ymax - 0.5 * (ymax - ymin)) + 0.5 * self.figsize[1] * scale
+        basetone = (38,129,174)
+        basetone = (200,200,200)
+        # basetone = (89,75,109)
+        pastel = lambda x: [int(0.75 * x[ii] + 0.25 * basetone[ii]) for ii in range(3)]
 
-        X = cuda.to_device(np.linspace(xmin_, xmax_, self.figsize[0]))
-        Y = cuda.to_device(np.linspace(ymin_, ymax_, self.figsize[1]))
+        self.display.fill(pastel(self.BACKGROUND))
 
-        return X, Y
+        N = cp.asnumpy(self.gpu.N_pos[self.gpu.C_node_idxs])
+        xmin, xmax, ymin, ymax = self.get_bounds(N)
+        N[:, :, 0] = (N[:, :, 0] - xmin) / (xmax - xmin) * self.figsize[0]
+        N[:, :, 1] = (N[:, :, 1] - ymin) / (ymax - ymin) * self.figsize[1]
+        N = N.astype(np.int)
 
+        for ii in range(N.shape[0]):
+            color = self.CELL_COLORS[self.ctypes[ii]]
 
+            color = pastel(color)
 
+            points = N[ii].tolist()
+            gfxdraw.aapolygon(self.display, points, color)
+            gfxdraw.filled_polygon(self.display, points, color)
 
-def render(cell_list: List[AbstractCell], figsize=(480, 360)):
-    N = np.array([len(c.node_list) for c in cell_list])
-    P = cp.zeros((len(cell_list), max(N), 2))
-    for ii, A in enumerate(
-            [cp.stack([cp.array(n.position.numpy()) for n in c.node_list]) for c in cell_list]):
-        P[ii] = A
-    C = cp.stack([cp.array(c.get_colour().numpy()) for c in cell_list], axis=0)
+        pygame.display.update()
+        self.clock.tick(self.fps)
 
-    xmin, xmax = cp.min(P[:, :, 0]), cp.max(P[:, :, 0])
-    ymin, ymax = cp.min(P[:, :, 1]), cp.max(P[:, :, 1])
-    scale = max((xmax - xmin) / figsize[0], (ymax - ymin) / figsize[1])
-    xmin_ = (xmax - 0.5 * (xmax - xmin)) - 0.5 * figsize[0] * scale
-    xmax_ = (xmax - 0.5 * (xmax - xmin)) + 0.5 * figsize[0] * scale
-    ymin_ = (ymax - 0.5 * (ymax - ymin)) - 0.5 * figsize[1] * scale
-    ymax_ = (ymax - 0.5 * (ymax - ymin)) + 0.5 * figsize[1] * scale
-    xmin, xmax, ymin, ymax = xmin_, xmax_, ymin_, ymax_
-    del xmin_, xmax_, ymin_, ymax_
+        # pyout()
 
-    X = cp.linspace(xmin, xmax, figsize[0])
-    Y = cp.linspace(ymin, ymax, figsize[1])
-    ou = cp.full(figsize[::-1] + (3,), 1.)
-    N = cp.array(N)
+    def get_bounds(self, N):
+        xmin_, xmax_ = np.min(N[:, :, 0]), np.max(N[:, :, 0])
+        ymin_, ymax_ = np.min(N[:, :, 1]), np.max(N[:, :, 1])
 
-    for _ in range(10):
-        X = cuda.to_device(X)
-        Y = cuda.to_device(Y)
-        P = cuda.to_device(P)
-        N = cuda.to_device(N)
-        C = cuda.to_device(C)
-        ou = cuda.to_device(cp.full(figsize[::-1] + (3,), 1.))
+        scale = max((xmax_ - xmin_) / self.figsize[0], (ymax_ - ymin_) / self.figsize[1])
+        xmin = (xmax_ - 0.5 * (xmax_ - xmin_)) - 0.5 * self.figsize[0] * scale
+        xmax = (xmax_ - 0.5 * (xmax_ - xmin_)) + 0.5 * self.figsize[0] * scale
+        ymin = (ymax_ - 0.5 * (ymax_ - ymin_)) - 0.5 * self.figsize[1] * scale
+        ymax = (ymax_ - 0.5 * (ymax_ - ymin_)) + 0.5 * self.figsize[1] * scale
 
-        block_size = 64
-        grid_size = (figsize[0] * figsize[1]) // block_size + 1
-        cuda.synchronize()
-
-        t0 = time.time()
-        raytrace[grid_size, block_size](X, Y, P, N, C, ou)
-        cuda.synchronize()
-        pyout(time.time() - t0)
-
-    # cv2.imshow("Foo", ou.copy_to_host())
-    # cv2.waitKey(-1)
-
-    return ou.copy_to_host()[:, :, ::-1]
-
-
-@cuda.jit
-def raytrace(X, Y, P, N, C, ou):
-    """
-    See https://www.geeksforgeeks.org/how-to-check-if-a-given-point-lies-inside-a-polygon/ and
-    https://stackoverflow.com/questions/36399381/whats-the-fastest-way-of-checking-if-a-point-is-inside-a-polygon-in-python
-    """
-    ii_start, jj_start, kk_start = cuda.grid(3)
-    ii_stride, jj_stride, kk_stride = cuda.gridsize(3)
-    for kk in range(kk_start, P.shape[0], kk_stride):
-        # dev
-        # find middle of polygon
-        p = P[kk, :N[kk]]
-        c = C[kk]
-
-        x_poly_mu, y_poly_mu = 0., 0.
-        for i in range(N[kk]):
-            x_poly_mu += p[i][0]
-            y_poly_mu += p[i][1]
-        x_poly_mu /= N[kk]
-        y_poly_mu /= N[kk]
-
-        # compute max distance
-        poly_radius = 0.
-        for i in range(N[kk]):
-            poly_radius = max(poly_radius, abs(p[i][0] - x_poly_mu) + abs(p[i][1] - y_poly_mu))
-        # dev
-
-        for ii in range(ii_start, X.shape[0], ii_stride):
-            for jj in range(jj_start, Y.shape[0], jj_stride):
-
-                x = X[ii]
-                y = Y[jj]
-
-                if abs(x - x_poly_mu) + abs(y - y_poly_mu) <= poly_radius:
-
-                    inside, on_edge = False, False
-                    xints = 0.
-                    p1x, p1y = p[N[kk] - 1]
-                    for i in range(N[kk]):
-                        p2x, p2y = p[i]
-                        if min(p1y, p2y) < y <= max(p1y, p2y) and x <= max(p1x, p2x):
-                            if p1y != p2y:
-                                xints = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
-                            if p1x == p2x or x <= xints:
-                                inside = not inside
-                            if x == xints:
-                                on_edge = True
-                        p1x, p1y = p2x, p2y
-                    if inside or on_edge:
-                        for channel in range(3):
-                            ou[jj, ii, channel] = c[channel]
+        return xmin, xmax, ymin, ymax

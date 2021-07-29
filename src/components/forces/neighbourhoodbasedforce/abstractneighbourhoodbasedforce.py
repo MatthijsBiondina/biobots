@@ -10,7 +10,7 @@ class AbstractNeighbourhoodBasedForce(ABC):
     """
 
     @abstractmethod
-    def add_neighbourhood_based_forces(self, node_list, p=None):
+    def add_neighbourhood_based_forces(self, node_list, p=None, gpu=None):
         pass
 
     def apply_forces_to_node_and_element(self, n, e, Fa, nltoA):

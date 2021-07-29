@@ -15,10 +15,11 @@ class FreeCellSimulation(AbstractCellSimulation):
         """
         This uses free cells, i.e. cells that never share elements or nodes with other cells
         """
-        super().__init__()
         self._dt = 0.005
         self._t = 0
         self._step = 0
+        super().__init__()
+
 
     @property
     def dt(self):
@@ -65,4 +66,9 @@ class FreeCellSimulation(AbstractCellSimulation):
         for ii in range(N):
             nodes.append(Node(v[ii, 0] + x, v[ii, 1] + y, self._get_next_node_id()))
 
-        return CellFree(ccm, nodes, self._get_next_cell_id())
+        cellfree = CellFree(ccm, nodes, self._get_next_cell_id())
+
+        for e in cellfree.element_list:
+            e.id = self._get_next_element_id()
+
+        return cellfree

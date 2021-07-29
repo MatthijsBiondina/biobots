@@ -37,7 +37,8 @@ class CellFree(AbstractCell):
 
             for ii in range(len(node_list)):
                 e = Element(node_list[ii], node_list[(ii + 1) % len(node_list)],
-                            f"{node_list[ii].id}_{node_list[(ii + 1) % len(node_list)].id}")
+                            id=0)
+                            # f"{node_list[ii].id}_{node_list[(ii + 1) % len(node_list)].id}")
                 self.element_list.append(e)
                 node_list[ii].cell_list.append(self)
                 e.cell_list.append(self)

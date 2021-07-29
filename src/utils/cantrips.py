@@ -1,6 +1,8 @@
 import cupy
+from numba.cuda.cudadrv.devicearray import DeviceNDArray
 from torch import Tensor
 import numpy as np
+import cupy as cp
 
 """DEBUG watches"""
 
@@ -33,6 +35,72 @@ def array_shapes(loc, ignore_key='__lcl', depth=0):
     return {key: ou[key] for key in sorted(ou) if ou[key] != {} and key != ignore_key}
 
 
+def cuda2numpy(loc, ignore_key='gpu', depth=0):
+    ou = {}
+    if depth >= 8:
+        return ou
+    for name in loc:
+        value = loc[name]
+        if isinstance(value, DeviceNDArray):
+            ou[name] = value.copy_to_host()
+        elif isinstance(value, dict):
+            ou[name] = cuda2numpy(value, depth=depth + 1)
+        else:
+            try:
+                loc_ = value.__dict__
+                ou[name] = cuda2numpy(value.__dict__, depth=depth + 1)
+            except AttributeError:
+                pass
+
+
+    retval = {}
+    for key in sorted(ou):
+        if key == ignore_key:
+            continue
+        if isinstance(ou[key], dict):
+            if len(ou[key]) == 0:
+                continue
+        retval[key] = ou[key]
+    return retval
+
+def cupy_shapes(loc):
+    ou = {}
+    for name in loc:
+        value = loc[name]
+        if isinstance(value, cp.ndarray):
+            ou[name] = value.shape
+
+    return {key: ou[key] for key in sorted(ou)}
+
+
+def cuda_shapes(loc, ignore_key='gpu', depth=0):
+    ou = {}
+    if depth >= 8:
+        return ou
+    for name in loc:
+        value = loc[name]
+        if isinstance(value, DeviceNDArray):
+            ou[name] = tuple(value.shape)
+        elif isinstance(value, dict):
+            ou[name] = cuda_shapes(value, depth=depth + 1)
+        else:
+            try:
+                loc_ = value.__dict__
+                ou[name] = cuda_shapes(value.__dict__, depth=depth + 1)
+            except AttributeError:
+                pass
+
+    retval = {}
+    for key in sorted(ou):
+        if key == ignore_key:
+            continue
+        if isinstance(ou[key], dict):
+            if len(ou[key]) == 0:
+                continue
+        retval[key] = ou[key]
+    return retval
+
+
 def tensor_shapes(loc, ignore_key='__lcl', depth=0):
     ou = {}
     if depth >= 8:
@@ -43,9 +111,6 @@ def tensor_shapes(loc, ignore_key='__lcl', depth=0):
             ou[name] = tuple(value.size())
         elif isinstance(value, dict):
             ou[name] = tensor_shapes(value, depth=depth + 1)
-        # elif isinstance(value, list) or isinstance(value, tuple):
-        #     loc_ = {ii: val for ii, val in enumerate(value)}
-        #     ou[name] = tensor_shapes(loc_)
         else:
             try:
                 loc_ = {key: val for key, val in value.__dict__.items()}
@@ -65,7 +130,7 @@ def as_numpy(loc, ignore_key='__lcl', depth=0):
             continue
         value = loc[name]
         if isinstance(value, Tensor):
-            ou[name] = value.cpu().numpy() # tuple(value.size())
+            ou[name] = value.cpu().numpy()  # tuple(value.size())
         elif isinstance(value, dict):
             ou[name] = tensor_shapes(value, depth=depth + 1)
         else:

@@ -94,7 +94,7 @@ def inpolygon(x, y, poly, pause=False):
                 xints = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
             if p1x == p2x or x <= xints:
                 inside = not inside
-            if x == xints:
-                return True
+            # if x == xints:
+            #     return True
         p1x, p1y = p2x, p2y
     return inside

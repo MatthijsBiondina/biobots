@@ -52,13 +52,16 @@ class Spheroid(FreeCellSimulation):
 
         # Make nodes around a polygon
         Ncells = 60
+        n = 0
         X, Y = [], []
         for x in range(ceil(Ncells ** .5)):
             for y in range(ceil(Ncells ** .5)):
-                X.append(x)
-                Y.append(y)
+                if n < Ncells:
+                    X.append(x)
+                    Y.append(y)
+                n += 1
 
-        N = 10
+        N = 12
         for i in range(len(X)):
             x = X[i]
             y = Y[i]
@@ -73,7 +76,6 @@ class Spheroid(FreeCellSimulation):
 
         """ ADD THE FORCES """
 
-        self.gpu_state = CudaMemory(self.cell_list, self.element_list, self.node_list)
 
         # Cell growth force
         self.add_cell_based_force(PolygonCellGrowthForce(area_energy, perimeter_energy,
@@ -89,8 +91,13 @@ class Spheroid(FreeCellSimulation):
         """ ADD SPACE PARTITION """
         self.boxes = SpacePartition(0.3, 0.3, self)
 
+        self.gpu = CudaMemory(self.cell_list, self.element_list, self.node_list, self.boxes)
+
+
         """ ADD THE DATA WRITERS """
         path_name = f"Spheroid/t0{t0}gtg{tg}gs{s}gsreg{sreg}gf{f}gda{dAsym}gds{dSep}gdl{dLim}" \
                     f"ga{area_energy}gb{perimeter_energy}gt{tension_energy}g_seed{seed}g/"
         self.add_simulation_data(SpatialState())
         # self.add_data_writer(WriteSpatialState(20, path_name))
+
+

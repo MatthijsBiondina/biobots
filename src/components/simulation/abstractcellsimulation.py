@@ -4,6 +4,7 @@ from abc import abstractmethod, ABC
 from typing import List, Union
 
 import numpy
+import cupy as cp
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
@@ -32,7 +33,7 @@ from src.components.simulation.stopping.abstractstoppingcondition import \
     AbstractStoppingCondition
 from src.components.spacepartition import SpacePartition
 from src.utils.errors import TodoException
-from src.utils.plotting import render, Renderer
+from src.utils.plotting import Renderer
 from src.utils.tools import pyout, prng, poem
 
 
@@ -43,6 +44,9 @@ class AbstractCellSimulation(ABC):
         A parent class that contains all the functions for running a simulation. The child/concrete
         class will only need a constructor that assembles the cells
         """
+        super().__init__()
+
+
         self.seed = None
         self.node_list: List[Node] = []
         self.next_node_id = 0
@@ -50,7 +54,7 @@ class AbstractCellSimulation(ABC):
         self.next_element_id = 0
         self.cell_list: List[AbstractCell] = []
         self.next_cell_id = 0
-        self.gpu_memory: Union[None, CudaMemory] = None
+        self.gpu: Union[None, CudaMemory] = None
 
         self.stochastic_jiggle = True  # Brownian noise?
         self.epsilon = 0.0001  # Size of the jiggle force
@@ -84,7 +88,12 @@ class AbstractCellSimulation(ABC):
 
         self.write_to_file = True
 
-        super().__init__()
+        # placeholders
+        self.epsilon_cuda = cp.float32(self.epsilon)
+        self.zero_point_five = cp.float32(0.5)
+        self.dt_cuda = cp.float32(self.dt)
+
+
 
     @property
     @abstractmethod
@@ -130,9 +139,9 @@ class AbstractCellSimulation(ABC):
         self.make_nodes_move()
 
         # Division must occur after movement
-        self.make_cells_divide()
+        # self.make_cells_divide()
 
-        self.kill_cells()
+        # self.kill_cells()
 
         self.modify_simulation_state()
 
@@ -141,13 +150,15 @@ class AbstractCellSimulation(ABC):
         self.step += 1
         self.t = self.step * self.dt
 
-        self.store_data()
-
-        if self.write_to_file:
-            self.write_data()
+        # self.store_data()
+        #
+        # if self.write_to_file:
+        #     self.write_data()
 
         if self.is_stopping_condition_met():
             self.stopped = True
+
+        self.gpu.clear_dynamic_memory()
 
     def n_time_steps(self, n):
         """
@@ -162,8 +173,8 @@ class AbstractCellSimulation(ABC):
             self.next_time_step()
             # pyout(time.time() - t0)
 
-            if self.step % 1000 == 0:
-                print(f"Time = {self.t:.3f} hours")
+            # if self.step % 1000 == 0:
+            #     print(f"Time = {self.t:.3f} hours")
 
             if self.stopped:
                 print(f"Stopping condition met at t={self.t:.3f}")
@@ -191,7 +202,7 @@ class AbstractCellSimulation(ABC):
         :return:
         """
         for force in self.cell_based_forces:
-            force.add_cell_based_forces(self.cell_list, self.gpu_memory)
+            force.add_cell_based_forces(self.cell_list, self.gpu)
 
     def generate_element_based_forces(self):
         """
@@ -210,35 +221,57 @@ class AbstractCellSimulation(ABC):
             ValueError("Space partition required for NeighbourhoodForces, but none set")
 
         for force in self.neighbourhood_based_forces:
-            force.add_neighbourhood_based_forces(self.node_list, self.boxes)
+            force.add_neighbourhood_based_forces(self.node_list, self.boxes, self.gpu)
 
     def make_nodes_move(self):
         """
 
         :return:
         """
-        for n in self.node_list:
-            eta = n.eta
-            force = n.force
+        if self.gpu.EXEC_CPU:
+            for n in self.node_list:
+                eta = n.eta
+                force = n.force
 
-            if self.stochastic_jiggle:
-                # Add in a tiny amount of stochasticity to the force calculation to nudge it out
-                # of unstable equilibria
+                if self.stochastic_jiggle:
+                    # Add in a tiny amount of stochasticity to the force calculation to nudge it out
+                    # of unstable equilibria
 
-                # Make a random direction vector
-                v = tensor([prng() - 0.5, prng() - 0.5])
-                v = v / v.norm()
+                    # Make a random direction vector
+                    v = tensor([prng() - 0.5, prng() - 0.5])
+                    v = v / v.norm()
 
-                # Add the random vector, and make sure that it is orders of magnitude smaller
-                # than the actual force
-                force += v * self.epsilon
+                    # Add the random vector, and make sure that it is orders of magnitude smaller
+                    # than the actual force
+                    force += v * self.epsilon
 
-            new_position = n.position + self.dt / eta * force
+                new_position = n.position + self.dt / eta * force
 
-            n.move_node(new_position)
+                n.move_node(new_position)
 
-            if self.using_boxes:
-                self.boxes.update_box_for_node(n)
+                if self.using_boxes:
+                    self.boxes.update_box_for_node(n)
+
+        self.make_nodes_move_cuda()
+
+    def make_nodes_move_cuda(self):
+        if self.stochastic_jiggle:
+            # Add in a tiny amount of stochasticity to the force calculation to nudge it out
+            # of unstable equilibria
+
+            # Make a random direction vector
+            v = cp.random.random(self.gpu.N_pos.shape) - self.zero_point_five
+            v /= cp.linalg.norm(v, axis=1)[:, None]
+
+            # Add the random vector, and make sure that it is orders of magnitude smaller
+            # than the actual force
+            self.gpu.N_for += v * self.epsilon_cuda
+
+        self.gpu.N_pos_previous = cp.copy(self.gpu.N_pos)
+        self.gpu.N_for_previous = cp.copy(self.gpu.N_for)
+
+        self.gpu.N_pos += self.dt_cuda / self.gpu.N_eta[:,None] * self.gpu.N_for
+        self.gpu.N_for = cp.zeros_like(self.gpu.N_for_previous)
 
     def adjust_node_position(self, n, new_pos):
         """
@@ -304,6 +337,8 @@ class AbstractCellSimulation(ABC):
         """
         for c in self.cell_list:
             c.age_cell(self.dt)
+
+        self.gpu.C_age += self.dt_cuda
 
     def add_cell_based_force(self, f: AbstractCellBasedForce):
         """
@@ -540,21 +575,12 @@ class AbstractCellSimulation(ABC):
         :return:
         """
 
-        R = Renderer()
+        R = Renderer(self.gpu)
 
-        for ii in tqdm(range(0, n, sm)):
-            # while totalSteps < n:
+        for _ in tqdm(range(0, n, sm)):
             self.n_time_steps(sm)
+            R.render()
 
-            R.render(self.cell_list)
-
-            pyout(ii)
-
-            # rendering
-
-        pyout()
-
-        raise TodoException
 
     def animate_wire_frame(self, n, sm):
         """
@@ -622,7 +648,9 @@ class AbstractCellSimulation(ABC):
 
         :return:
         """
-        raise TodoException
+        ou = self.next_element_id
+        self.next_element_id += 1
+        return ou
 
     def _get_next_cell_id(self):
         """
