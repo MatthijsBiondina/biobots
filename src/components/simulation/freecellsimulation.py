@@ -57,10 +57,10 @@ class FreeCellSimulation(AbstractCellSimulation):
 
         v = nsidedpoly(N, 'radius', 0.5).vertices
 
-        # todo: reorder to MATLAB implementation for ease of debugging (rm)
-        while (torch.atan2(v[0, 1], v[0, 0]) % (2 * pi) < 1.5 * pi).item():
-            v = torch.cat((v[1:, :], v[0, :].unsqueeze(0)), dim=0)
-        # todo: (rm)
+        # # todo: reorder to MATLAB implementation for ease of debugging (rm)
+        # while (torch.atan2(v[0, 1], v[0, 0]) % (2 * pi) < 1.5 * pi).item():
+        #     v = torch.cat((v[1:, :], v[0, :].unsqueeze(0)), dim=0)
+        # # todo: (rm)
 
         nodes = []
         for ii in range(N):

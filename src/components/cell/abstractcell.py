@@ -101,6 +101,8 @@ class AbstractCell(ABC):
     def age_cell(self, dt):
         # This will be done at the end of the time step
         self.age += dt
+
+        # todo: this should not be reached in GPU mode
         self.cell_cycle_model.age_cell_cycle(dt)
 
 

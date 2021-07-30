@@ -150,7 +150,8 @@ class CellCellInteractionForce(AbstractNodeElementForce):
                     # A unit vector tangent to the edge
                     u = e.get_vector_1_to_2()
 
-                    # We arbitrarily choose an end point on the edge to make a vector going from edge
+                    # We arbitrarily choose an end point on the edge to make a vector going from
+                    # edge
                     # to node, then project it onto the tangent vector to find the point of action
                     n1ton = n.position - e.node_1.position
                     n1toA = u * torch.dot(n1ton, u)
@@ -247,6 +248,7 @@ class CellCellInteractionForce(AbstractNodeElementForce):
                      * torch.exp(self.c * (self.d_separation - x) / self.d_separation)
                 return Fa
             else:
+
                 tensor(0.)
         else:
             raise TodoException
@@ -268,8 +270,9 @@ class CellCellInteractionForce(AbstractNodeElementForce):
                  * ((self.d_separation_cuda - x[attraction_idxs]) / self.attraction_range_cuda) \
                  * cp.exp(self.c_cuda * (self.d_separation_cuda - x[attraction_idxs]) \
                           / self.d_separation_cuda)
-        Fa_int = - self.spring_rate_repulsion_cuda \
-                 * cp.log(self.repulsion_range_cuda / (x[internal_idxs] - self.d_asymptote_cuda))
+        Fa_int = cp.zeros(x[internal_idxs].shape, dtype=cp.float32)
+        # - self.spring_rate_repulsion_cuda \
+        # * cp.log(self.repulsion_range_cuda / (x[internal_idxs] - self.d_asymptote_cuda))
 
         Fa[repulsion_idxs] = Fa_rep
         Fa[attraction_idxs] = Fa_att

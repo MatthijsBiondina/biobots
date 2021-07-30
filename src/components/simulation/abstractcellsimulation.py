@@ -335,8 +335,9 @@ class AbstractCellSimulation(ABC):
 
         :return:
         """
-        for c in self.cell_list:
-            c.age_cell(self.dt)
+        if self.gpu.EXEC_CPU:
+            for c in self.cell_list:
+                c.age_cell(self.dt)
 
         self.gpu.C_age += self.dt_cuda
 

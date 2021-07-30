@@ -91,7 +91,7 @@ class Spheroid(FreeCellSimulation):
         """ ADD SPACE PARTITION """
         self.boxes = SpacePartition(0.3, 0.3, self)
 
-        self.gpu = CudaMemory(self.cell_list, self.element_list, self.node_list, self.boxes)
+        self.gpu = CudaMemory(self.cell_list, self.element_list, self.node_list)
 
 
         """ ADD THE DATA WRITERS """

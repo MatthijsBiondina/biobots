@@ -33,7 +33,8 @@ class Polyshape:
         elif x is None and y is None and P is None and X is not None and Y is not None:
             # where X and Y are 1-by-M lists of vectors for the x- and y-coordinates, creates a
             # polygon consisting of M boundaries. Each vector in X must have the same length as
-            # the corresponding vector in Y, but the number of vertices can vary between boundaries.
+            # the corresponding vector in Y, but the number of vertices can vary between
+            # boundaries.
             raise TodoException
         else:
             raise ValueError("Bad arguments: either no arguments, x and y, P, or X and Y "
@@ -56,8 +57,8 @@ def nsidedpoly(N: int, mode: Union[None, str] = None, arg=1):
     :return:
     """
     if mode == 'radius':
-        x = cos(torch.arange(0, 2 * pi, 2 * pi / N)) * arg
-        y = sin(torch.arange(0, 2 * pi, 2 * pi / N, )) * arg
+        x = cos(torch.arange(-pi / N, pi * (2 - 1 / N), 2 * pi / N)) * arg
+        y = sin(torch.arange(-pi / N, pi * (2 - 1 / N), 2 * pi / N, )) * arg
         return Polyshape(x=x, y=y)
     elif mode == 'centre':
         raise TodoException
@@ -72,7 +73,8 @@ def polyarea(x: Tensor, y: Tensor):
 def inpolygon(x, y, poly, pause=False):
     """
     See https://www.geeksforgeeks.org/how-to-check-if-a-given-point-lies-inside-a-polygon/ and
-    https://stackoverflow.com/questions/36399381/whats-the-fastest-way-of-checking-if-a-point-is-inside-a-polygon-in-python
+    https://stackoverflow.com/questions/36399381/whats-the-fastest-way-of-checking-if-a-point-is
+    -inside-a-polygon-in-python
     :param x:
     :param y:
     :param poly:
@@ -80,7 +82,6 @@ def inpolygon(x, y, poly, pause=False):
     """
     if pause:
         pyout()
-
 
     n = len(poly)
     inside = False

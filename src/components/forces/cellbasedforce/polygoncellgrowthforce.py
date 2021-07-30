@@ -55,20 +55,9 @@ class PolygonCellGrowthForce(AbstractCellBasedForce):
                     self.add_target_perimeter_forces(c)
                     self.add_surface_tension_forces(c)
 
-
         self.add_target_area_forces_cuda(gpu)
         self.add_target_perimeter_forces_cuda(gpu)
         self.add_surface_tension_forces_cuda(gpu)
-
-
-    def add_target_area_forces_cuda(self, gpu: CudaMemory):
-        magnitude = self.area_energy_parameter_gpu * (gpu.C_area - gpu.C_target_area)
-        n = gpu.N_pos.reshape(magnitude.shape[0], -1, gpu.N_pos.shape[-1])
-        ncw = cp.roll(n, 1, axis=1).reshape(-1, gpu.N_pos.shape[-1])
-        nacw = cp.roll(n, -1, axis=1).reshape(-1, gpu.N_pos.shape[-1])
-        u = nacw - ncw
-        v = u @ self.orthogonal_inwards
-        gpu.N_for += -v * (magnitude @ gpu.cell2node)[:, None]
 
     def add_target_area_forces(self, c):
         """
@@ -120,6 +109,42 @@ class PolygonCellGrowthForce(AbstractCellBasedForce):
 
             n.add_force_contribution(-v * magnitude)
 
+    def add_target_area_forces_cuda(self, gpu: CudaMemory):
+        magnitude = self.area_energy_parameter_gpu * (gpu.C_area - gpu.C_target_area)
+
+        n = gpu.N_pos[gpu.C_node_idxs]
+
+        ncw = cp.roll(n, 1, axis=1)
+        nacw = cp.roll(n, -1, axis=1)
+        u = nacw - ncw
+        v = u @ self.orthogonal_inwards
+
+        F = -v * magnitude[:, None, None]
+
+        # broadcast from node_idxs in cell_lists to node idxs in N_for
+        F = F[:, None, :, :]
+        F = cp.einsum('ijk...,ikl...->ijl...', F, gpu.cell2node[:, :, :, None]).squeeze(1)
+        F = cp.sum(F, axis=0)
+
+        gpu.N_for += F
+
+
+        # Fx = (F[:, None, :, 0] @ gpu.cell2node).squeeze(1)
+        # Fy = (F[:, None, :, 1] @ gpu.cell2node).squeeze(1)
+        #
+        # F_ = F[:, None, :, :]
+        # broadcast = gpu.cell2node[:, :, :, None]
+        #
+        # A = cp.einsum('ijk...,ikl...->ijl...', F_, broadcast).squeeze(1)
+        #
+        # c_node_idxs = gpu.C_node_idxs
+        #
+        # pyout(gpu.N_for)
+        #
+        # gpu.N_for[gpu.C_node_idxs] += h
+        #
+        # gpu.N_for += -v * (magnitude @ gpu.cell2node)[:, None]
+
     def add_target_perimeter_forces(self, c: AbstractCell):
         """
         This calculates the force applied to the cell boundary due to a difference between
@@ -149,6 +174,9 @@ class PolygonCellGrowthForce(AbstractCellBasedForce):
         target_perimeter = gpu.C_target_perimeter
         magnitude = self.perimeter_energy_parameter_gpu_x2 * (current_perimeter - target_perimeter)
         r = gpu.vector_1_to_2
+
+        cell2node = gpu.cell2node
+
         f = r * (magnitude @ gpu.cell2node)[:, None]
 
         gpu.N_for[gpu.E_node_1] += f

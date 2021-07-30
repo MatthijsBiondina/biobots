@@ -52,6 +52,7 @@ class Renderer:
         basetone = (200,200,200)
         # basetone = (89,75,109)
         pastel = lambda x: [int(0.75 * x[ii] + 0.25 * basetone[ii]) for ii in range(3)]
+        dark = lambda x: [x[ii]//2 for ii in range(3)]
 
         self.display.fill(pastel(self.BACKGROUND))
 
@@ -67,8 +68,10 @@ class Renderer:
             color = pastel(color)
 
             points = N[ii].tolist()
-            gfxdraw.aapolygon(self.display, points, color)
-            gfxdraw.filled_polygon(self.display, points, color)
+            pygame.draw.polygon(self.display, color, points)
+            pygame.draw.polygon(self.display, dark(color), points, 5)
+            # gfxdraw.aapolygon(self.display, points, color)
+            # gfxdraw.filled_polygon(self.display, points, color)
 
         pygame.display.update()
         self.clock.tick(self.fps)
