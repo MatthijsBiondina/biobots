@@ -577,6 +577,7 @@ class AbstractCellSimulation(ABC):
         """
 
         R = Renderer(self.gpu)
+        R.render()
 
         for _ in tqdm(range(0, n, sm)):
             self.n_time_steps(sm)

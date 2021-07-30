@@ -17,7 +17,7 @@ class ConnectedCells(FreeCellSimulation):
     def __init__(self, t0: float = 10, seed: int = 49):
         super().__init__()
         self.set_rng_seed(seed)
-        self.N = 4
+        self.N = 12
 
         # Make first cell
         c1 = self.new_cell(0, 0)

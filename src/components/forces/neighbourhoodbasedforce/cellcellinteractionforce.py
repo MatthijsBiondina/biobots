@@ -255,8 +255,10 @@ class CellCellInteractionForce(AbstractNodeElementForce):
 
     def force_law_cuda(self, gpu: CudaMemory, x, N_idxs, E_idxs):
         # Need to check if node-edge interaction pair is between a node and edge of the same cell
-        internal_mask = cp.any(gpu.cell2node_mask.T[N_idxs] & gpu.cell2element_mask.T[E_idxs],
-                               axis=1)
+
+        internal_mask = gpu.E_internal[E_idxs]
+        # internal_mask = cp.any(gpu.cell2node_mask.T[N_idxs] & gpu.cell2element_mask.T[E_idxs],
+        #                        axis=1)
         repulsion_mask = (self.d_asymptote_cuda < x) & (x < self.d_separation_cuda)
         attraction_mask = (self.d_separation_cuda < x) & (x < self.d_limit_cuda)
         repulsion_idxs = cp.where(repulsion_mask & ~ internal_mask)

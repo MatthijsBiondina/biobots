@@ -68,6 +68,7 @@ class Renderer:
             color = pastel(color)
 
             points = N[ii].tolist()
+            points = [[x[0], self.figsize[1]-x[1]] for x in points]
             pygame.draw.polygon(self.display, color, points)
             pygame.draw.polygon(self.display, dark(color), points, 5)
             # gfxdraw.aapolygon(self.display, points, color)

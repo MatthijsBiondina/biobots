@@ -50,7 +50,7 @@ class CudaMemory:
 
         # Node data
         self.N_id = cp.array([n.id for n in node_list])
-        self.N_cell_ids = cp.array([])
+        self.N_id2idx = self.__make_id2idx()
         self.N_pos = cp.array([n.position.numpy() for n in node_list])
         self.N_for = cp.array([n.force.numpy() for n in node_list])
         self.N_pos_previous = None
@@ -58,8 +58,11 @@ class CudaMemory:
         self.N_eta = cp.array([n.eta for n in node_list], dtype=cp.float32)
 
         # Element data
-        self.E_node_1 = cp.array([e.node_1.id for e in element_list])
-        self.E_node_2 = cp.array([e.node_2.id for e in element_list])
+        self.E_node_1_id = cp.array([e.node_1.id for e in element_list])
+        self.E_node_2_id = cp.array([e.node_2.id for e in element_list])
+        self.E_node_1 = self.N_id2idx[self.E_node_1_id]
+        self.E_node_2 = self.N_id2idx[self.E_node_2_id]
+        self.E_internal = cp.array([e.internal for e in element_list])
 
         # SpacePartition
         # self.boxes = CudaSpacePartition(space_partition)
@@ -67,10 +70,11 @@ class CudaMemory:
         # Broadcast matrices
         self.cell2node = self.__make_cell2node_matrix(cell_list)
         self.cell2element = self.__make_cell2element_matrix(cell_list)
+        self.element2node = self.__make_element2node_matrices(element_list)
         self.rotate_clockwise_2d = cp.array([[0., -1.], [1., .0]], dtype=cp.float32)
 
         # Masks
-        # self.node2element_mask = self.__make_node2element_matrix(element_list)
+        self.node2element_mask = self.__make_node2element_mask(element_list)
         # self.cell2node_mask = self.cell2node.astype(cp.bool)
         self.cell2element_mask = self.cell2element.astype(cp.bool)
 
@@ -177,7 +181,13 @@ class CudaMemory:
         for cii, c in enumerate(clst):
             for nii, n in enumerate(c.node_list):
                 matrix[cii][nii][self.C_node_idxs[cii, nii]] = 1.
+        return matrix
 
+    def __make_element2node_matrices(self, elst: List[Element]):
+        matrix = cp.zeros((self.E_node_1_id.shape[0], self.N_pos.shape[0], 2), dtype=cp.float32)
+        for eii, e in enumerate(elst):
+            matrix[eii, self.N_id2idx[e.node_1.id], 0] = 1.
+            matrix[eii, self.N_id2idx[e.node_2.id], 1] = 1.
         return matrix
 
     def __make_cell2element_matrix(self, cell_list: List[AbstractCell]):
@@ -196,3 +206,16 @@ class CudaMemory:
             for n_ii, n in enumerate(c.node_list):
                 c_node_idxs[c_ii, n_ii] = cp.where(n_id == n.id)[0][0]
         return c_node_idxs
+
+    def __make_id2idx(self):
+        N_id2idx = cp.zeros((int(cp.max(self.N_id)) + 1,), dtype=cp.int64)
+        for ii in range(self.N_id.shape[0]):
+            N_id2idx[self.N_id[ii]] = ii
+        return N_id2idx
+
+    def __make_node2element_mask(self, elst: List[Element]):
+        mask = cp.zeros((self.N_pos.shape[0], self.E_node_1.shape[0]), dtype=cp.bool)
+        for eii, e in enumerate(elst):
+            mask[self.N_id2idx[e.node_1.id], eii] = True
+            mask[self.N_id2idx[e.node_2.id], eii] = True
+        return mask
