@@ -166,8 +166,8 @@ class PolygonCellGrowthForce(AbstractCellBasedForce):
         # broadcast to nodes
         F = cp.sum(F[:, None, :, None] * gpu.element2node[:, :, None, :], axis=0)
 
-        F_node_1 = F[:, 0, :]
-        F_node_2 = -F[:, 1, :]
+        F_node_1 = F[:, :, 0]
+        F_node_2 = -F[:, :, 1]
 
         gpu.N_for += F_node_1 + F_node_2
 
@@ -213,11 +213,14 @@ class PolygonCellGrowthForce(AbstractCellBasedForce):
 
     def add_surface_tension_forces_cuda(self, gpu: CudaMemory):
         r = gpu.vector_1_to_2
+        surface_tension_energy_parameter = self.surface_tension_energy_parameter
         F = self.surface_tension_energy_parameter * r
 
+        A = F[:, None, :, None] * gpu.element2node[:, :, None, :]
+
         F = cp.sum(F[:, None, :, None] * gpu.element2node[:, :, None, :], axis=0)
-        F_node_1 = F[:, 0, :]
-        F_node_2 = -F[:, 1, :]
+        F_node_1 = F[:, :, 0]
+        F_node_2 = -F[:, :, 1]
         F = F_node_1 + F_node_2
 
         gpu.N_for += F

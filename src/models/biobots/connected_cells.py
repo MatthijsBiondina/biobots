@@ -47,13 +47,15 @@ class ConnectedCells(FreeCellSimulation):
 
         self.gpu = CudaMemory(self.cell_list, self.element_list, self.node_list)
 
-    def new_cell(self, dx, dy):
+    def new_cell(self, dx, dy, ctype='epithelial'):
         v = nsidedpoly(self.N, 'radius', 0.5).vertices
         nodes = []
         for ii in range(self.N):
             nodes.append(Node(v[ii, 0] + dx, v[ii, 1] + dy, self._get_next_node_id()))
         element_idxs = [self._get_next_element_id() for _ in range(self.N)]
-        c = EpithelialCell(nodes, element_idxs, self._get_next_cell_id())
+        if ctype == 'epithelial':
+            c = EpithelialCell(nodes, element_idxs, self._get_next_cell_id())
+
 
         self.cell_list.append(c)
 
