@@ -45,8 +45,8 @@ class CudaMemory:
         self.C_grown_cell_target_area = list2cupy([c.grown_cell_target_area for c in cell_list])
 
         # Cell type indexes
-        self.Ctype_0 = cp.argwhere(self.C_type == 0)
-        self.Ctype_1 = cp.argwhere(self.C_type == 1)
+        self.Ctype_0 = cp.argwhere(self.C_type == 0).squeeze()
+        self.Ctype_1 = cp.argwhere(self.C_type == 1).squeeze()
 
         # Node data
         self.N_id = cp.array([n.id for n in node_list])
@@ -88,12 +88,13 @@ class CudaMemory:
         self._C_target_perimeter = None
         self._polygons = None
         self._E_length = None
+        self._t = 0.
 
         # self._dmatrix_l2 = None
         # numerical placeholders
         self.pi = cp.float32(np.pi)
 
-    def clear_dynamic_memory(self):
+    def clear_dynamic_memory(self, t):
         self._vector_1_to_2 = None
         self._outward_normal = None
         self._element_length = None
@@ -103,6 +104,7 @@ class CudaMemory:
         self._C_target_perimeter = None
         self._polygons = None
         self._E_length = None
+        self._t = t
 
         # self._dmatrix_l2 = None
 
@@ -139,9 +141,15 @@ class CudaMemory:
     @property
     def C_target_area(self) -> cp.ndarray:
         if self._C_target_area is None:
-            self._C_target_area = self.C_grown_cell_target_area
-            # todo: check thant c_grown_cell_target_area doesn't get set to None when dynamic
-            # memory is cleared
+            self._C_target_area = cp.empty_like(self._C_area)
+
+            # Type 0 has constant target area
+            self._C_target_area[self.Ctype_0] = self.C_grown_cell_target_area[self.Ctype_0]
+
+            # Type 1 grows and shrinks as a polygon
+            self._C_target_area[self.Ctype_1] = \
+                (2. + 1. * -cp.sin(self._t * 1)) * self.C_grown_cell_target_area[self.Ctype_1]
+
         return self._C_target_area
 
     @property
@@ -159,6 +167,9 @@ class CudaMemory:
             n = self.C_element_idxs.shape[1]
             self._C_target_perimeter[self.Ctype_0] = \
                 (4 * self.C_target_area[self.Ctype_0] * n * cp.tan(self.pi / n)) ** .5
+
+            self._C_target_perimeter[self.Ctype_1] = \
+                (4 * self.C_target_area[self.Ctype_1] * n * cp.tan(self.pi / n)) ** .5
         return self._C_target_perimeter
 
     @property

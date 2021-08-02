@@ -57,7 +57,15 @@ class FreeCellPerimeterNormalisingForce(AbstractCellBasedForce):
         p = gpu.C_perimeter / gpu.C_node_idxs.shape[1]
         unit_vector_1_to_2 = gpu.vector_1_to_2
         l = gpu.element_length
-        mag = self.spring_rate_cuda * ((p @ gpu.cell2element) - l)
+
+
+
+
+        # mag = self.spring_rate_cuda * ((p @ gpu.cell2element) - l)
+
+        mag = self.spring_rate_cuda * cp.log(l / (p @ gpu.cell2element)) / cp.log(0.5)
+
+
         force = unit_vector_1_to_2 * mag[:, None]
         gpu.N_for[gpu.E_node_1] -= force
         gpu.N_for[gpu.E_node_2] += force

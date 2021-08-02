@@ -158,7 +158,7 @@ class AbstractCellSimulation(ABC):
         if self.is_stopping_condition_met():
             self.stopped = True
 
-        self.gpu.clear_dynamic_memory()
+        self.gpu.clear_dynamic_memory(self.t)
 
     def n_time_steps(self, n):
         """
