@@ -40,6 +40,7 @@ class AbstractCell(ABC):
 
         # By default, the type is 0, matching a general epithelial cell
         self.cell_type = 0
+        self.inhibitory = 0
 
     @abstractmethod
     def divide(self):
@@ -104,7 +105,6 @@ class AbstractCell(ABC):
 
         # todo: this should not be reached in GPU mode
         self.cell_cycle_model.age_cell_cycle(dt)
-
 
     def get_age(self):
         return self.cell_cycle_model.get_age()

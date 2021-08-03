@@ -24,6 +24,7 @@ from src.components.forces.neighbourhoodbasedforce.abstractneighbourhoodbasedfor
     AbstractNeighbourhoodBasedForce
 from src.components.forces.tissuebasedforce.abstracttissuebasedforce import \
     AbstractTissueBasedForce
+from src.components.informationprocessing.abstractsignal import AbstractSignal
 from src.components.node.node import Node
 from src.components.simulation.cuda_memory import CudaMemory
 from src.components.simulation.datastore.abstractdatastore import AbstractDataStore
@@ -64,6 +65,7 @@ class AbstractCellSimulation(ABC):
         self.element_based_forces: List[AbstractElementBasedForce] = []
         self.neighbourhood_based_forces: List[AbstractNeighbourhoodBasedForce] = []
         self.tissue_based_forces: List[AbstractTissueBasedForce] = []
+        self.information_processing_signals: List[AbstractSignal] = []
 
         self.stopping_conditions: List[AbstractStoppingCondition] = []
 
@@ -129,6 +131,7 @@ class AbstractCellSimulation(ABC):
         Updates all the forces and applies the movements
         :return:
         """
+        self.generate_information_processing_signals()
 
         self.generate_tissue_based_forces()
         self.generate_cell_based_forces()
@@ -136,6 +139,7 @@ class AbstractCellSimulation(ABC):
 
         if self.using_boxes:
             self.generate_neighbourhood_based_forces()
+
 
         self.make_nodes_move()
 
@@ -223,6 +227,10 @@ class AbstractCellSimulation(ABC):
 
         for force in self.neighbourhood_based_forces:
             force.add_neighbourhood_based_forces(self.node_list, self.boxes, self.gpu)
+
+    def generate_information_processing_signals(self):
+        for signal in self.information_processing_signals:
+            signal.add_signal(self.gpu)
 
     def make_nodes_move(self):
         """
@@ -373,6 +381,9 @@ class AbstractCellSimulation(ABC):
         :return:
         """
         raise TodoException
+
+    def add_information_processing_signal(self, s: AbstractSignal):
+        self.information_processing_signals.append(s)
 
     def add_tissue_level_killer(self, k):
         """

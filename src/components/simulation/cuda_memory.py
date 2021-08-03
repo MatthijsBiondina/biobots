@@ -47,13 +47,14 @@ class CudaMemory:
         self.C_age = list2cupy([c.age for c in cell_list])
         self.C_type = list2cupy([c.cell_type for c in cell_list])
         self.C_grown_cell_target_area = list2cupy([c.grown_cell_target_area for c in cell_list])
+        self.C_inhibitory = cp.array([c.inhibitory for c in cell_list])
 
         # Cell type indexes
-        self.Ctype_0 = cp.argwhere(self.C_type == 0).squeeze()
-        self.Ctype_1 = cp.argwhere(self.C_type == 1).squeeze()
-        self.Ctype_2 = cp.argwhere(self.C_type == 2).squeeze()
-        self.Ctype_3 = cp.argwhere(self.C_type == 3).squeeze()
-        self.Ctype_4 = cp.argwhere(self.C_type == 4).squeeze()
+        self.Ctype_0 = cp.argwhere(self.C_type == 0).squeeze(1)
+        self.Ctype_1 = cp.argwhere(self.C_type == 1).squeeze(1)
+        self.Ctype_2 = cp.argwhere(self.C_type == 2).squeeze(1)
+        self.Ctype_3 = cp.argwhere(self.C_type == 3).squeeze(1)
+        self.Ctype_4 = cp.argwhere(self.C_type == 4).squeeze(1)
 
         # Node data
         self.N_id = cp.array([n.id for n in node_list])
@@ -67,6 +68,7 @@ class CudaMemory:
         # Element data
         self.E_node_1_id = cp.array([e.node_1.id for e in element_list])
         self.E_node_2_id = cp.array([e.node_2.id for e in element_list])
+        self.E_cell_idx = cp.array([e.cell_list[0].id for e in element_list])
         self.E_node_1 = self.N_id2idx[self.E_node_1_id]
         self.E_node_2 = self.N_id2idx[self.E_node_2_id]
         self.E_internal = cp.array([e.internal for e in element_list])
@@ -96,10 +98,13 @@ class CudaMemory:
         self._C_perimeter = None
         self._C_target_area = None
         self._C_target_perimeter = None
+        self._C_pos = None
         self._polygons = None
         self._E_length = None
         self._candidates = None
+
         self._t = 0.
+        self.spice = 0.
 
         # self._dmatrix_l2 = None
         # numerical placeholders
@@ -113,6 +118,7 @@ class CudaMemory:
         self._C_perimeter = None
         self._C_target_area = None
         self._C_target_perimeter = None
+        self._C_pos = None
         self._polygons = None
         self._E_length = None
         self._candidates = None
@@ -225,6 +231,12 @@ class CudaMemory:
             candidates = candidates & ~ self.node2element_mask
             self._candidates = candidates
         return self._candidates
+
+    @property
+    def C_pos(self):
+        if self._C_pos is None:
+            self._C_pos = cp.mean(self.N_pos[self.C_node_idxs], axis=1)
+        return self._C_pos
 
     def __make_cell2node_matrix(self, clst: List[AbstractCell]):
         matrix = cp.zeros((self.C_node_idxs.shape[0], self.C_node_idxs.shape[1],

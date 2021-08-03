@@ -6,12 +6,14 @@ from src.components.cell.celldb.ciliacell import CiliaCell
 from src.components.cell.celldb.epithelialcell import EpithelialCell
 from src.components.cell.celldb.foodcell import FoodCell
 from src.components.cell.celldb.heartcell import HeartCell
+from src.components.cell.celldb.sensorcell import SensorCell
 from src.components.forces.cellbasedforce.ciliapropagationforce import CiliaPropagationForce
 from src.components.forces.cellbasedforce.freecellperimeternormalisingforce import \
     FreeCellPerimeterNormalisingForce
 from src.components.forces.cellbasedforce.polygoncellgrowthforce import PolygonCellGrowthForce
 from src.components.forces.neighbourhoodbasedforce.cellcellinteractionforce import \
     CellCellInteractionForce
+from src.components.informationprocessing.foodgradientsignal import FoodGradientSignal
 from src.components.node.node import Node
 from src.components.simulation.cuda_memory import CudaMemory
 from src.components.simulation.freecellsimulation import FreeCellSimulation
@@ -25,24 +27,31 @@ class Gradient(FreeCellSimulation):
         self.N = 12
 
         # e_cent = self.new_cell(0.0, 0.5)
-        c_left = self.new_cell(-.5, 0.5, 'cilia', ang=pi)
-        c_right = self.new_cell(.5, 0.5, 'cilia', ang=pi)
-        s_left = self.new_cell(-.5, -.5, 'sensor')
-        s_right = self.new_cell(.5, -.5, 'sensor')
 
-        # c1 = self.new_cell(-.5, -.5, 'cilia')
-        # c2 = self.new_cell(0.5, -.5, 'cilia')
-        # c3 = self.new_cell(-.5, 0.5, 'sensor')
-        # c4 = self.new_cell(0.5, 0.5, 'sensor')
 
-        # c2 = self.new_cell(.5, 0)
-        # c2 = self.new_cell(.5, 0, 'cilia')
 
+
+        c_left = self.new_cell(-1., -.5, 'cilia', inh=True, ang=0.25*pi)
+        s_left = self.new_cell(-1., 0.5, 'sensor', inh=False)
+
+        bl = self.new_cell(0, -.5)
+        tl = self.new_cell(0, .5)
+
+
+
+        c_right = self.new_cell(1., -.5, 'cilia', inh=False, ang=-0.25 * pi)
+        s_right = self.new_cell(1., 0.5, 'sensor', inh=True)
 
         self.connect_cells(c_left, s_left)
+        self.connect_cells(bl, tl)
         self.connect_cells(c_right, s_right)
-        self.connect_cells(c_right, c_left)
-        self.connect_cells(s_left, s_right)
+
+        self.connect_cells(c_left, bl)
+        self.connect_cells(bl, c_right)
+        self.connect_cells(s_left, tl)
+        self.connect_cells(tl, s_right)
+        # self.connect_cells(c_right, c_left)
+        # self.connect_cells(s_left, s_right)
 
         self.new_cell(5 * 1.5, 5 * 1.5)
         self.new_cell(-5 * 1.5, 5 * 1.5)
@@ -64,10 +73,12 @@ class Gradient(FreeCellSimulation):
                                                                     ds=0.1, dl=0.2, dt=self.dt,
                                                                     using_polys=True))
 
+        self.add_information_processing_signal(FoodGradientSignal())
+
         """init memory"""
         self.gpu = CudaMemory(self.cell_list, self.element_list, self.node_list, 0.2)
 
-    def new_cell(self, dx, dy, ctype='epithelial', ang=0):
+    def new_cell(self, dx, dy, ctype='epithelial', ang=0, inh=None):
 
         v = nsidedpoly(self.N, 'radius', 0.5).vertices.numpy()
 
@@ -84,11 +95,11 @@ class Gradient(FreeCellSimulation):
         elif ctype == 'heartcell':
             c = HeartCell(nodes, element_idxs, self._get_next_cell_id())
         elif ctype == 'cilia':
-            c = CiliaCell(nodes, element_idxs, self._get_next_cell_id())
+            c = CiliaCell(nodes, element_idxs, self._get_next_cell_id(), inh=inh)
         elif ctype == 'food':
             c = FoodCell(nodes, element_idxs, self._get_next_cell_id())
         elif ctype == 'sensor':
-            c = FoodCell(nodes, element_idxs, self._get_next_cell_id())
+            c = SensorCell(nodes, element_idxs, self._get_next_cell_id(), inh=inh)
         else:
             raise ValueError(f"{ctype} is not a valid cell type.")
 
