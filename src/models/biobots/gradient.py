@@ -1,9 +1,12 @@
-from random import random
-
+import numpy as np
 import torch
+from numpy import pi
 
+from src.components.cell.celldb.ciliacell import CiliaCell
 from src.components.cell.celldb.epithelialcell import EpithelialCell
+from src.components.cell.celldb.foodcell import FoodCell
 from src.components.cell.celldb.heartcell import HeartCell
+from src.components.forces.cellbasedforce.ciliapropagationforce import CiliaPropagationForce
 from src.components.forces.cellbasedforce.freecellperimeternormalisingforce import \
     FreeCellPerimeterNormalisingForce
 from src.components.forces.cellbasedforce.polygoncellgrowthforce import PolygonCellGrowthForce
@@ -15,46 +18,36 @@ from src.components.simulation.freecellsimulation import FreeCellSimulation
 from src.utils.polyshapes import nsidedpoly
 
 
-
-class ConnectedCells(FreeCellSimulation):
-    def __init__(self, t0: float = 10, seed: int = 49):
-        super().__init__()
-        self.set_rng_seed(31)
+class Gradient(FreeCellSimulation):
+    def __init__(self, t0=10, seed: int = 49):
+        super(Gradient, self).__init__()
+        self.set_rng_seed(seed)
         self.N = 12
 
-        n = 4
-        cells = []
+        # e_cent = self.new_cell(0.0, 0.5)
+        c_left = self.new_cell(-.5, 0.5, 'cilia', ang=pi)
+        c_right = self.new_cell(.5, 0.5, 'cilia', ang=pi)
+        s_left = self.new_cell(-.5, -.5, 'sensor')
+        s_right = self.new_cell(.5, -.5, 'sensor')
 
-        for yy in range(n * 2):
-            cells.append([])
-            for xx in range(n * 2):
-                if yy % 2:
-                    x = xx - n
-                    y = yy - n
-                else:
-                    x = xx - n + 0.5
-                    y = yy - n
+        # c1 = self.new_cell(-.5, -.5, 'cilia')
+        # c2 = self.new_cell(0.5, -.5, 'cilia')
+        # c3 = self.new_cell(-.5, 0.5, 'sensor')
+        # c4 = self.new_cell(0.5, 0.5, 'sensor')
 
-                if random() < 0.8:
-                    C = self.new_cell(x, y, 'epithelial')
+        # c2 = self.new_cell(.5, 0)
+        # c2 = self.new_cell(.5, 0, 'cilia')
 
-                else:
-                    C = self.new_cell(x, y, 'heartcell')
-                cells[-1].append(C)
 
-        for yy in range(len(cells)):
-            for xx in range(len(cells[yy])):
-                if yy > 0:
-                    self.connect_cells(cells[yy][xx], cells[yy - 1][xx])
-                if xx > 0:
-                    self.connect_cells(cells[yy][xx], cells[yy][xx - 1])
-                if xx > 0 and yy > 0:
-                    pass
+        self.connect_cells(c_left, s_left)
+        self.connect_cells(c_right, s_right)
+        self.connect_cells(c_right, c_left)
+        self.connect_cells(s_left, s_right)
 
-        self.new_cell(n * 1.5, n * 1.5)
-        self.new_cell(-n * 1.5, n * 1.5)
-        self.new_cell(-n * 1.5, -n * 1.5)
-        self.new_cell(n * 1.5, -n * 1.5)
+        self.new_cell(5 * 1.5, 5 * 1.5)
+        self.new_cell(-5 * 1.5, 5 * 1.5)
+        self.new_cell(-5 * 1.5, -5 * 1.5)
+        self.new_cell(5 * 1.5, -5 * 1.5, ctype='food')
 
         for c in self.cell_list:
             self.node_list += c.node_list
@@ -63,31 +56,41 @@ class ConnectedCells(FreeCellSimulation):
 
         """ADD THE FORCES"""
 
-        self.set_rng_seed(seed)
+        self.add_cell_based_force(PolygonCellGrowthForce(area_P=50, perimeter_P=10, tension_P=10))
+        self.add_cell_based_force(FreeCellPerimeterNormalisingForce(spring_rate=15))
+        self.add_cell_based_force(CiliaPropagationForce(propagation_magnitude=5))
 
-        # Cell growth force
-        self.add_cell_based_force(PolygonCellGrowthForce(area_P=20, perimeter_P=10, tension_P=10))
-
-        # Node-Element interaction force - requires a SpacePartition
         self.add_neighbourhood_based_force(CellCellInteractionForce(sra=10, srr=10, da=-0.1,
                                                                     ds=0.1, dl=0.2, dt=self.dt,
                                                                     using_polys=True))
 
-        # Tries to make the edges the same length
-        self.add_cell_based_force(FreeCellPerimeterNormalisingForce(spring_rate=10))
-
+        """init memory"""
         self.gpu = CudaMemory(self.cell_list, self.element_list, self.node_list, 0.2)
 
-    def new_cell(self, dx, dy, ctype='epithelial'):
-        v = nsidedpoly(self.N, 'radius', 0.5).vertices
+    def new_cell(self, dx, dy, ctype='epithelial', ang=0):
+
+        v = nsidedpoly(self.N, 'radius', 0.5).vertices.numpy()
+
+        ang = np.array([[np.cos(2 * pi - ang), -np.sin(2 * pi - ang)],
+                        [np.sin(2 * pi - ang), np.cos(2 * pi - ang)]])
+        v = v @ ang
+
         nodes = []
         for ii in range(self.N):
             nodes.append(Node(v[ii, 0] + dx, v[ii, 1] + dy, self._get_next_node_id()))
         element_idxs = [self._get_next_element_id() for _ in range(self.N)]
         if ctype == 'epithelial':
             c = EpithelialCell(nodes, element_idxs, self._get_next_cell_id())
-        if ctype == 'heartcell':
+        elif ctype == 'heartcell':
             c = HeartCell(nodes, element_idxs, self._get_next_cell_id())
+        elif ctype == 'cilia':
+            c = CiliaCell(nodes, element_idxs, self._get_next_cell_id())
+        elif ctype == 'food':
+            c = FoodCell(nodes, element_idxs, self._get_next_cell_id())
+        elif ctype == 'sensor':
+            c = FoodCell(nodes, element_idxs, self._get_next_cell_id())
+        else:
+            raise ValueError(f"{ctype} is not a valid cell type.")
 
         self.cell_list.append(c)
 
@@ -118,6 +121,8 @@ class ConnectedCells(FreeCellSimulation):
 
             E1.internal = True
             E2.internal = True
+            E1.pointing_forward = None
+            E2.pointing_forward = None
             e_lst.append(E1)
             e_lst.append(E2)
 

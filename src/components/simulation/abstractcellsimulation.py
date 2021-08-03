@@ -1,6 +1,7 @@
 # import random
 import time
 from abc import abstractmethod, ABC
+import random
 from typing import List, Union
 
 import numpy
@@ -119,7 +120,7 @@ class AbstractCellSimulation(ABC):
         self.seed = seed
 
         # todo: No need for this as long as we use our custom pseudo-random generator
-        # random.seed(seed)
+        random.seed(seed)
         numpy.random.seed(seed)
         torch.manual_seed(seed)
 

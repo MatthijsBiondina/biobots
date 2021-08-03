@@ -35,7 +35,11 @@ class CudaMemory:
     def __init__(self,
                  cell_list: List[AbstractCell],
                  element_list: List[Element],
-                 node_list: List[Node]):
+                 node_list: List[Node],
+                 d_limit: float):
+        # hyperparameters
+        self.d_limit = cp.float32(d_limit)
+
         # Cell data
         self.C_node_ids = cp.array([[n.id for n in c.node_list] for c in cell_list])
         self.C_node_idxs = self.__make_c_node_idxs(cell_list, node_list)
@@ -47,6 +51,9 @@ class CudaMemory:
         # Cell type indexes
         self.Ctype_0 = cp.argwhere(self.C_type == 0).squeeze()
         self.Ctype_1 = cp.argwhere(self.C_type == 1).squeeze()
+        self.Ctype_2 = cp.argwhere(self.C_type == 2).squeeze()
+        self.Ctype_3 = cp.argwhere(self.C_type == 3).squeeze()
+        self.Ctype_4 = cp.argwhere(self.C_type == 4).squeeze()
 
         # Node data
         self.N_id = cp.array([n.id for n in node_list])
@@ -63,6 +70,9 @@ class CudaMemory:
         self.E_node_1 = self.N_id2idx[self.E_node_1_id]
         self.E_node_2 = self.N_id2idx[self.E_node_2_id]
         self.E_internal = cp.array([e.internal for e in element_list])
+        self.E_cilia_direction = cp.array(
+            [0 if e.pointing_forward is None else
+             1 if e.pointing_forward else -1 for e in element_list])
 
         # SpacePartition
         # self.boxes = CudaSpacePartition(space_partition)
@@ -88,6 +98,7 @@ class CudaMemory:
         self._C_target_perimeter = None
         self._polygons = None
         self._E_length = None
+        self._candidates = None
         self._t = 0.
 
         # self._dmatrix_l2 = None
@@ -104,6 +115,7 @@ class CudaMemory:
         self._C_target_perimeter = None
         self._polygons = None
         self._E_length = None
+        self._candidates = None
         self._t = t
 
         # self._dmatrix_l2 = None
@@ -144,11 +156,15 @@ class CudaMemory:
             self._C_target_area = cp.empty_like(self._C_area)
 
             # Type 0 has constant target area
-            self._C_target_area[self.Ctype_0] = self.C_grown_cell_target_area[self.Ctype_0]
+            self._C_target_area[:] = self.C_grown_cell_target_area[:]
 
             # Type 1 grows and shrinks as a polygon
             self._C_target_area[self.Ctype_1] = \
-                (2. + 1. * -cp.sin(self._t * 1)) * self.C_grown_cell_target_area[self.Ctype_1]
+                (1.5 + .75 * -cp.sin(self._t * 5)) * self.C_grown_cell_target_area[self.Ctype_1]
+
+            # Type 2 has constant target area
+            # self._C_target_area[self.Ctype_2] = self.C_grown_cell_target_area[self.Ctype_2]
+            # self._C_target_area[self.Ctype_3] = self.C_grown_cell_target_area[self.Ctype_3]
 
         return self._C_target_area
 
@@ -165,11 +181,12 @@ class CudaMemory:
 
             # Type 0 wants to be a regular polygon
             n = self.C_element_idxs.shape[1]
-            self._C_target_perimeter[self.Ctype_0] = \
-                (4 * self.C_target_area[self.Ctype_0] * n * cp.tan(self.pi / n)) ** .5
-
+            self._C_target_perimeter = \
+                (4 * self.C_target_area * n * cp.tan(self.pi / n)) ** .5
             self._C_target_perimeter[self.Ctype_1] = \
                 (4 * self.C_target_area[self.Ctype_1] * n * cp.tan(self.pi / n)) ** .5
+            # self._C_target_perimeter[self.Ctype_2] = \
+            #     (4 * self.C_target_area[self.Ctype_2] * n * cp.tan(self.pi / n)) ** .5
         return self._C_target_perimeter
 
     @property
@@ -185,6 +202,29 @@ class CudaMemory:
             n2 = self.N_pos[self.E_node_2]
             self._E_length = cp.sum((n1 - n2) ** 2, axis=1) ** .5
         return self._E_length
+
+    @property
+    def candidates(self):
+        if self._candidates is None:
+            candidates = cp.ones((self.N_pos.shape[0], self.E_node_1.shape[0]), dtype=cp.bool)
+
+            # find nodes in element interaction regions
+            pnt = self.N_pos
+            start = self.N_pos[self.E_node_1]
+            end = self.N_pos[self.E_node_2]
+            line_vec = end - start
+            pnt_vec = pnt[:, None] - start[None, :]
+            line_len = cp.linalg.norm(line_vec, axis=1)
+            line_unitvec = line_vec / line_len[:, None]
+            pnt_vec_scaled = pnt_vec / line_len[None, :, None]
+            t = cp.sum(line_unitvec[None, :, :] * pnt_vec_scaled, axis=2)
+            nearest = line_vec[None, :, :] * t[:, :, None]
+            dist = cp.linalg.norm(nearest - pnt_vec, axis=2)
+            candidates = candidates & (0. <= t) & (t <= 1.) & (dist < self.d_limit)
+
+            candidates = candidates & ~ self.node2element_mask
+            self._candidates = candidates
+        return self._candidates
 
     def __make_cell2node_matrix(self, clst: List[AbstractCell]):
         matrix = cp.zeros((self.C_node_idxs.shape[0], self.C_node_idxs.shape[1],

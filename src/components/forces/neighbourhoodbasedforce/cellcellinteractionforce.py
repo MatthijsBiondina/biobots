@@ -181,6 +181,8 @@ class CellCellInteractionForce(AbstractNodeElementForce):
         self.add_neighbourhood_based_forces_cuda(gpu)
 
     def add_neighbourhood_based_forces_cuda(self, gpu: CudaMemory):
+
+
         N_idxs, E_idxs = self.get_neighbouring_elements_cuda(gpu)
 
         # A unit vector tangent to the edge
@@ -202,26 +204,28 @@ class CellCellInteractionForce(AbstractNodeElementForce):
         self.apply_forces_to_node_and_element_cuda(gpu, N_idxs, E_idxs, Fa, n1toA)
 
     def get_neighbouring_elements_cuda(self, gpu: CudaMemory):
-        candidates = cp.ones((gpu.N_pos.shape[0], gpu.E_node_1.shape[0]), dtype=cp.bool)
+        candidates = gpu.candidates
 
-        # find nodes in element interaction regions
-        pnt = gpu.N_pos
-        start = gpu.N_pos[gpu.E_node_1]
-        end = gpu.N_pos[gpu.E_node_2]
-        line_vec = end - start
-        pnt_vec = pnt[:, None] - start[None, :]
-        line_len = cp.linalg.norm(line_vec, axis=1)
-        line_unitvec = line_vec / line_len[:, None]
-        pnt_vec_scaled = pnt_vec / line_len[None, :, None]
-        t = cp.sum(line_unitvec[None, :, :] * pnt_vec_scaled, axis=2)
-        nearest = line_vec[None, :, :] * t[:, :, None]
-        dist = cp.linalg.norm(nearest - pnt_vec, axis=2)
-        candidates = candidates & (0. <= t) & (t <= 1.) & (dist < self.d_limit_cuda)
-
-        # same element
-        # same_cell = cp.sum(gpu.cell2node.T[None, :] * gpu.cell2node.T[:, None], axis=2) > 0.5
-
-        candidates = candidates & ~ gpu.node2element_mask
+        # candidates = cp.ones((gpu.N_pos.shape[0], gpu.E_node_1.shape[0]), dtype=cp.bool)
+        #
+        # # find nodes in element interaction regions
+        # pnt = gpu.N_pos
+        # start = gpu.N_pos[gpu.E_node_1]
+        # end = gpu.N_pos[gpu.E_node_2]
+        # line_vec = end - start
+        # pnt_vec = pnt[:, None] - start[None, :]
+        # line_len = cp.linalg.norm(line_vec, axis=1)
+        # line_unitvec = line_vec / line_len[:, None]
+        # pnt_vec_scaled = pnt_vec / line_len[None, :, None]
+        # t = cp.sum(line_unitvec[None, :, :] * pnt_vec_scaled, axis=2)
+        # nearest = line_vec[None, :, :] * t[:, :, None]
+        # dist = cp.linalg.norm(nearest - pnt_vec, axis=2)
+        # candidates = candidates & (0. <= t) & (t <= 1.) & (dist < self.d_limit_cuda)
+        #
+        # # same element
+        # # same_cell = cp.sum(gpu.cell2node.T[None, :] * gpu.cell2node.T[:, None], axis=2) > 0.5
+        #
+        # candidates = candidates & ~ gpu.node2element_mask
         idxs = cp.argwhere(candidates)
         N_idxs, E_idxs = idxs[:, 0], idxs[:, 1]
         return N_idxs, E_idxs

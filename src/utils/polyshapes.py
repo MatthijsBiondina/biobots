@@ -57,8 +57,8 @@ def nsidedpoly(N: int, mode: Union[None, str] = None, arg=1):
     :return:
     """
     if mode == 'radius':
-        x = cos(torch.arange(-pi / N, pi * (2 - 1 / N), 2 * pi / N)) * arg
-        y = sin(torch.arange(-pi / N, pi * (2 - 1 / N), 2 * pi / N, )) * arg
+        x = cos(-.5*pi+torch.arange(-pi / N, pi * (2 - 1 / N), 2 * pi / N)) * arg
+        y = sin(-.5*pi+torch.arange(-pi / N, pi * (2 - 1 / N), 2 * pi / N, )) * arg
         return Polyshape(x=x, y=y)
     elif mode == 'centre':
         raise TodoException

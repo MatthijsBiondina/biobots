@@ -9,7 +9,7 @@ from src.utils.tools import pyout
 
 
 class Element:
-    def __init__(self, node_1, node_2, id):
+    def __init__(self, node_1, node_2, id, pointing_forward=None):
         """
         All the initilising
         An element will always have a pair of nodes
@@ -75,6 +75,8 @@ class Element:
         self.node_2.add_element(self)
 
         self.update_total_drag()
+
+        self.pointing_forward = pointing_forward
 
     def delete(self):
         raise TodoException
