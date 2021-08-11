@@ -7,6 +7,7 @@ from src.components.cell.celldb.epithelialcell import EpithelialCell
 from src.components.cell.celldb.foodcell import FoodCell
 from src.components.cell.celldb.heartcell import HeartCell
 from src.components.cell.celldb.sensorcell import SensorCell
+from src.components.central_memory.cpu_memory import CPUMemory
 from src.components.forces.cellbasedforce.ciliapropagationforce import CiliaPropagationForce
 from src.components.forces.cellbasedforce.freecellperimeternormalisingforce import \
     FreeCellPerimeterNormalisingForce
@@ -28,16 +29,11 @@ class Gradient(FreeCellSimulation):
 
         # e_cent = self.new_cell(0.0, 0.5)
 
-
-
-
-        c_left = self.new_cell(-1., -.5, 'cilia', inh=True, ang=0.25*pi)
+        c_left = self.new_cell(-1., -.5, 'cilia', inh=True, ang=0.25 * pi)
         s_left = self.new_cell(-1., 0.5, 'sensor', inh=False)
 
         bl = self.new_cell(0, -.5)
         tl = self.new_cell(0, .5)
-
-
 
         c_right = self.new_cell(1., -.5, 'cilia', inh=False, ang=-0.25 * pi)
         s_right = self.new_cell(1., 0.5, 'sensor', inh=True)
@@ -67,7 +63,7 @@ class Gradient(FreeCellSimulation):
 
         self.add_cell_based_force(PolygonCellGrowthForce(area_P=50, perimeter_P=10, tension_P=10))
         self.add_cell_based_force(FreeCellPerimeterNormalisingForce(spring_rate=15))
-        self.add_cell_based_force(CiliaPropagationForce(propagation_magnitude=5))
+        self.add_cell_based_force(CiliaPropagationForce(propagation_magnitude=10))
 
         self.add_neighbourhood_based_force(CellCellInteractionForce(sra=10, srr=10, da=-0.1,
                                                                     ds=0.1, dl=0.2, dt=self.dt,
@@ -77,6 +73,7 @@ class Gradient(FreeCellSimulation):
 
         """init memory"""
         self.gpu = CudaMemory(self.cell_list, self.element_list, self.node_list, 0.2)
+        # self.gpu = CPUMemory(self.cell_list, self.element_list, self.node_list, 0.2, self.gpu)
 
     def new_cell(self, dx, dy, ctype='epithelial', ang=0, inh=None):
 

@@ -1,13 +1,8 @@
-import sys
-import time
 from typing import List, Union
 
 import cupy as cp
-import numpy as np
-# import numpy as cp
 import torch
 from torch import tensor
-
 from src.components.forces.neighbourhoodbasedforce.abstractnodeelementforce import \
     AbstractNodeElementForce
 from src.components.node.node import Node
@@ -181,7 +176,6 @@ class CellCellInteractionForce(AbstractNodeElementForce):
         self.add_neighbourhood_based_forces_cuda(gpu)
 
     def add_neighbourhood_based_forces_cuda(self, gpu: CudaMemory):
-
 
         N_idxs, E_idxs = self.get_neighbouring_elements_cuda(gpu)
 

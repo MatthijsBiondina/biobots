@@ -2,7 +2,8 @@ import sys
 import time
 from typing import List
 
-import cupy as cp
+import numpy as cp
+# import cupy as cp
 from src.components.cell.abstractcell import AbstractCell
 from src.components.forces.cellbasedforce.abstractcellbasedforce import AbstractCellBasedForce
 from src.components.simulation.cuda_memory import CudaMemory, synchronize

@@ -1,21 +1,13 @@
-import sys
-import time
 from typing import List
 
-import cupy.cuda.stream
-import numba
-import numpy as np
 import cupy as cp
 import torch
-from numba import vectorize, float64, cuda, float32, guvectorize, int64
-from tqdm import tqdm
+from numba import float32, guvectorize
 
-from src.components.cell import element
 from src.components.cell.abstractcell import AbstractCell
 from src.components.forces.cellbasedforce.abstractcellbasedforce import AbstractCellBasedForce
-from src.components.simulation.cuda_memory import CudaMemory, synchronize
-from src.utils.errors import TodoException
-from src.utils.tools import pyout
+from src.components.simulation.cuda_memory import CudaMemory
+
 
 
 @guvectorize([(float32[:], float32[:], float32, float32[:])], '(n),(n),()->(n)', target="cuda")

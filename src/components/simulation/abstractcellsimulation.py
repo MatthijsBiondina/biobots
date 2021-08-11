@@ -1,14 +1,10 @@
-# import random
-import time
 from abc import abstractmethod, ABC
 import random
 from typing import List, Union
 
 import numpy
 import cupy as cp
-import numpy as np
 import torch
-import matplotlib.pyplot as plt
 from torch import tensor
 from tqdm import tqdm
 
@@ -47,7 +43,6 @@ class AbstractCellSimulation(ABC):
         class will only need a constructor that assembles the cells
         """
         super().__init__()
-
 
         self.seed = None
         self.node_list: List[Node] = []
@@ -96,8 +91,6 @@ class AbstractCellSimulation(ABC):
         self.zero_point_five = cp.float32(0.5)
         self.dt_cuda = cp.float32(self.dt)
 
-
-
     @property
     @abstractmethod
     def dt(self):
@@ -140,7 +133,6 @@ class AbstractCellSimulation(ABC):
         if self.using_boxes:
             self.generate_neighbourhood_based_forces()
 
-
         self.make_nodes_move()
 
         # Division must occur after movement
@@ -162,6 +154,8 @@ class AbstractCellSimulation(ABC):
 
         if self.is_stopping_condition_met():
             self.stopped = True
+
+        self.ccd(self.gpu)
 
         self.gpu.clear_dynamic_memory(self.t)
 
@@ -243,7 +237,8 @@ class AbstractCellSimulation(ABC):
                 force = n.force
 
                 if self.stochastic_jiggle:
-                    # Add in a tiny amount of stochasticity to the force calculation to nudge it out
+                    # Add in a tiny amount of stochasticity to the force calculation to nudge it
+                    # out
                     # of unstable equilibria
 
                     # Make a random direction vector
@@ -279,7 +274,7 @@ class AbstractCellSimulation(ABC):
         self.gpu.N_pos_previous = cp.copy(self.gpu.N_pos)
         self.gpu.N_for_previous = cp.copy(self.gpu.N_for)
 
-        self.gpu.N_pos += self.dt_cuda / self.gpu.N_eta[:,None] * self.gpu.N_for
+        self.gpu.N_pos += self.dt_cuda / self.gpu.N_eta[:, None] * self.gpu.N_for
         self.gpu.N_for = cp.zeros_like(self.gpu.N_for_previous)
 
     def adjust_node_position(self, n, new_pos):
@@ -465,35 +460,6 @@ class AbstractCellSimulation(ABC):
         for modifier in self.simulation_modifiers:
             modifier.modify_simulation(self)
 
-    def kill_cells(self):
-        """
-        Loop through the cell killers
-
-        Currently the two killer types work differently. This is for backward compatibility with
-        a hack job that I still need to work right now. Note to self, after all your work with
-        DynamicLayer is done take some time to fix this up for SquareCellJoined
-        :return:
-        """
-
-        for killer in self.tissue_level_killers:
-            killer.kill_cells(self)
-
-        kill_list: List[AbstractCell] = []
-        for killer in self.cell_killers:
-            kill_list.extend(killer.make_kill_list(self.cell_list))
-
-        self.process_cells_to_remove(kill_list)
-
-    def process_cells_to_remove(self, kill_list):
-        """
-
-        :param kill_list:
-        :return:
-        """
-        # Loop from the end
-        for c in reversed(kill_list):
-            raise TodoException
-
     def is_stopping_condition_met(self):
         """
 
@@ -504,80 +470,8 @@ class AbstractCellSimulation(ABC):
                 return True
         return False
 
-    def get_num_cells(self):
-        """
-
-        :return:
-        """
-        raise TodoException
-
     def get_num_elements(self):
-        """
-
-        :return:
-        """
         return len(self.element_list)
-
-    def get_num_nodes(self):
-        """
-
-        :return:
-        """
-        raise TodoException
-
-    def visualise(self, varargin):
-        """
-
-        :param varargin:
-        :return:
-        """
-        raise TodoException
-
-    def visualise_area(self):
-        """
-
-        :return:
-        """
-        raise TodoException
-
-    def visualise_rods(self, r):
-        """
-
-        :param r:
-        :return:
-        """
-        raise TodoException
-
-    def visualise_nodes(self, r):
-        """
-
-        :param r: cell radius
-        :return:
-        """
-        raise TodoException
-
-    def visualise_nodes_and_edges(self, r):
-        """
-
-        :param r: cell radius
-        :return:
-        """
-        raise TodoException
-
-    def visualise_wire_frame(self, varargin):
-        """
-        plot a line for each element
-        :param varargin:
-        :return:
-        """
-        raise TodoException
-
-    def visualise_wire_frame_previous(self, varargin):
-        """
-        plot a line for each element
-        :param varargin:
-        :return:
-        """
 
     def animate(self, n, sm):
         """
@@ -595,57 +489,6 @@ class AbstractCellSimulation(ABC):
             self.n_time_steps(sm)
             R.render()
 
-
-    def animate_wire_frame(self, n, sm):
-        """
-        Since we aren't storing data at this point, the only way to animate is to calculate then
-        plot
-        :param n:
-        :param sm:
-        :return:
-        """
-        raise TodoException
-
-    def animate_rods(self, n, sm, r):
-        """
-
-        :param n:
-        :param sm:
-        :param r:
-        :return:
-        """
-        raise TodoException
-
-    def animate_nodes(self, n, sm, r):
-        """
-
-        :param n:
-        :param sm:
-        :param r:
-        :return:
-        """
-        raise TodoException
-
-    def animate_nodes_and_edges(self, n, sm, r):
-        """
-
-        :param n:
-        :param sm:
-        :param r:
-        :return:
-        """
-        raise TodoException
-
-    def draw_pill(self, a, b, r):
-        """
-        Draws a pill shape where the centre of the circles are at a and b
-        :param a: centre of circle
-        :param b: centre of other circle
-        :param r: radius
-        :return:
-        """
-        raise TodoException
-
     def _get_next_node_id(self):
         """
 
@@ -654,8 +497,6 @@ class AbstractCellSimulation(ABC):
         ou = self.next_node_id
         self.next_node_id += 1
         return ou
-
-        # raise TodoException
 
     def _get_next_element_id(self):
         """
@@ -675,18 +516,35 @@ class AbstractCellSimulation(ABC):
         self.next_cell_id += 1
         return ii
 
-    def _add_nodes_to_list(self, list_of_nodes):
-        """
+    def ccd(self, gpu: CudaMemory):
+        candidates = gpu.candidates
+        idxs = cp.argwhere(candidates)
+        if len(idxs) == 0:
+            return
 
-        :param list_of_nodes:
-        :return:
-        """
-        raise TodoException
+        N_idxs, E_idxs = idxs[:, 0], idxs[:, 1]
 
-    def _add_elements_to_list(self, list_of_elements):
-        """
+        N_pos = gpu.N_pos[N_idxs]
+        N_prp = gpu.N_pos_previous[N_idxs]
+        E_nd1 = gpu.N_pos[gpu.E_node_1[E_idxs]]
+        E_nd2 = gpu.N_pos[gpu.E_node_2[E_idxs]]
 
-        :param list_of_elements:
-        :return:
-        """
-        raise TodoException
+        A = E_nd1
+        B = E_nd2
+        C = N_prp
+        D = N_pos
+
+        ax, ay = A[:, 0], A[:, 1]
+        bx, by = B[:, 0], B[:, 1]
+        cx, cy = C[:, 0], C[:, 1]
+        dx, dy = D[:, 0], D[:, 1]
+
+        q_nom = ax * (by - cy) + bx * (cy - ay) + cx * (ay - by)
+        q_den = (dx - cx) * (by - ay) + (cy - dy) * (bx - ax)
+        q = q_nom / q_den
+        p = (cx - ax + q * (dx - cx)) / (bx - ax)
+
+        shorten = (0. <= p) & (p < 1.) & (0. <= q) & (q <= 1.)
+
+        if any(shorten):
+            gpu.N_pos[N_idxs][shorten] = (A + 0.9 * p[:, None] * (B - A))[shorten]

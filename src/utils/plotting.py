@@ -42,7 +42,11 @@ class Renderer:
 
         self.ctypes = cp.asnumpy(self.gpu.C_type).astype(int)
 
+        self.xmin, self.xmax, self.ymin, self.ymax = None, None, None, None
+
     def render(self):
+        if not self.gpu.RENDER:
+            return
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
@@ -71,8 +75,6 @@ class Renderer:
             points = [[x[0], self.figsize[1]-x[1]] for x in points]
             pygame.draw.polygon(self.display, color, points)
             pygame.draw.polygon(self.display, dark(color), points, 5)
-            # gfxdraw.aapolygon(self.display, points, color)
-            # gfxdraw.filled_polygon(self.display, points, color)
 
         pygame.display.update()
         self.clock.tick(self.fps)
@@ -89,4 +91,10 @@ class Renderer:
         ymin = (ymax_ - 0.5 * (ymax_ - ymin_)) - 0.5 * self.figsize[1] * scale
         ymax = (ymax_ - 0.5 * (ymax_ - ymin_)) + 0.5 * self.figsize[1] * scale
 
-        return xmin, xmax, ymin, ymax
+        self.xmin = xmin if self.xmin is None else min(self.xmin, xmin)
+        self.xmax = xmax if self.xmax is None else max(self.xmax, xmax)
+        self.ymin = ymin if self.ymin is None else min(self.ymin, ymin)
+        self.ymax = ymax if self.ymax is None else max(self.ymax, ymax)
+
+
+        return self.xmin, self.xmax, self.ymin, self.ymax

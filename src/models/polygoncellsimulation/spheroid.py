@@ -1,6 +1,7 @@
 from math import ceil
 
 from src.components.cell.cellcycle.growthcontactinhibition import GrowthContactInhibition
+from src.components.central_memory.cpu_memory import CPUMemory
 from src.components.forces.cellbasedforce.freecellperimeternormalisingforce import \
     FreeCellPerimeterNormalisingForce
 from src.components.forces.cellbasedforce.polygoncellgrowthforce import PolygonCellGrowthForce
@@ -27,7 +28,8 @@ class Spheroid(FreeCellSimulation):
 
         :param t0: the pause phase duration
         :param tg: the growth phase duration
-        :param s: the cell-cell interaction force law parameter used for both adhesion and repulsion
+        :param s: the cell-cell interaction force law parameter used for both adhesion and
+        repulsion
         :param sreg: the perimeter normalising force
         :param seed: seed for random number generator
         """
@@ -76,7 +78,6 @@ class Spheroid(FreeCellSimulation):
 
         """ ADD THE FORCES """
 
-
         # Cell growth force
         self.add_cell_based_force(PolygonCellGrowthForce(area_energy, perimeter_energy,
                                                          tension_energy))
@@ -92,12 +93,10 @@ class Spheroid(FreeCellSimulation):
         self.boxes = SpacePartition(0.3, 0.3, self)
 
         self.gpu = CudaMemory(self.cell_list, self.element_list, self.node_list)
-
+        self.gpu = CPUMemory(self.cell_list, self.element_list, self.node_list)
 
         """ ADD THE DATA WRITERS """
         path_name = f"Spheroid/t0{t0}gtg{tg}gs{s}gsreg{sreg}gf{f}gda{dAsym}gds{dSep}gdl{dLim}" \
                     f"ga{area_energy}gb{perimeter_energy}gt{tension_energy}g_seed{seed}g/"
         self.add_simulation_data(SpatialState())
         # self.add_data_writer(WriteSpatialState(20, path_name))
-
-

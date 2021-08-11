@@ -1,3 +1,4 @@
+import time
 from typing import List, Union
 
 # import numpy as cp
@@ -31,6 +32,7 @@ def dot(A: cp.ndarray, B: cp.ndarray) -> cp.ndarray:
 
 class CudaMemory:
     EXEC_CPU = False
+    RENDER = True
 
     def __init__(self,
                  cell_list: List[AbstractCell],
@@ -165,8 +167,13 @@ class CudaMemory:
             self._C_target_area[:] = self.C_grown_cell_target_area[:]
 
             # Type 1 grows and shrinks as a polygon
+
+            diff = 1.5
+
             self._C_target_area[self.Ctype_1] = \
-                (1.5 + .75 * -cp.sin(self._t * 5)) * self.C_grown_cell_target_area[self.Ctype_1]
+                (1. + 0.5 * diff + 0.5 * diff * -cp.sin(self._t * 5)) * \
+                self.C_grown_cell_target_area[
+                    self.Ctype_1]
 
             # Type 2 has constant target area
             # self._C_target_area[self.Ctype_2] = self.C_grown_cell_target_area[self.Ctype_2]
@@ -212,6 +219,7 @@ class CudaMemory:
     @property
     def candidates(self):
         if self._candidates is None:
+            t0 = time.time()
             candidates = cp.ones((self.N_pos.shape[0], self.E_node_1.shape[0]), dtype=cp.bool)
 
             # find nodes in element interaction regions

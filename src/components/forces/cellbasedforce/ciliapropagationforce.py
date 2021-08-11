@@ -1,5 +1,5 @@
-import cupy as cp
-
+# import cupy as cp
+import numpy as cp
 from src.components.forces.cellbasedforce.abstractcellbasedforce import AbstractCellBasedForce
 from src.components.informationprocessing.foodgradientsignal import sigmoid
 from src.components.simulation.cuda_memory import CudaMemory

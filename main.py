@@ -10,8 +10,8 @@ from src.utils.tools import pyout, prng
 
 # s = ConnectedCells()
 s = Gradient()
-# s = Spheroid(10, 10, 10, 5, 0)
-# s = RingBuckling(10, 10, 10, 0)
-s.animate(10000, 3)
+
+
+s.animate(1000000,1)
 pyout()
 pyout()
