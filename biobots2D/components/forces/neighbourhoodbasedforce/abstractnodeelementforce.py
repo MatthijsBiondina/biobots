@@ -7,8 +7,6 @@ from biobots2D.components.cell.element import Element
 from biobots2D.components.forces.neighbourhoodbasedforce.abstractneighbourhoodbasedforce import \
     AbstractNeighbourhoodBasedForce
 from biobots2D.components.node.node import Node
-from biobots2D.utils.errors import TodoException
-from biobots2D.utils.tools import pyout
 
 
 class AbstractNodeElementForce(AbstractNeighbourhoodBasedForce, ABC):

@@ -4,7 +4,7 @@ from numpy import sin, pi, cos
 
 from biobots2D.components.node.node import Node
 from biobots2D.components.simulation.ringsimulation import RingSimulation
-from biobots2D.utils.errors import TodoException
+from utils import TodoException
 
 
 class RingBuckling(RingSimulation):

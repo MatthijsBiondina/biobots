@@ -6,10 +6,10 @@ from torch import tensor
 from biobots2D.components.forces.neighbourhoodbasedforce.abstractnodeelementforce import \
     AbstractNodeElementForce
 from biobots2D.components.node.node import Node
-from biobots2D.components.simulation.cuda_memory import CudaMemory, synchronize
+from biobots2D.components.simulation.cuda_memory import CudaMemory
 from biobots2D.components.spacepartition import SpacePartition
-from biobots2D.utils.errors import TodoException
-from biobots2D.utils.tools import pyout
+from utils import TodoException
+from utils.tools import pyout
 
 
 class CellCellInteractionForce(AbstractNodeElementForce):

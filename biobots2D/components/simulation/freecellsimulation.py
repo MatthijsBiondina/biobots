@@ -1,19 +1,14 @@
-import torch
-from numpy import pi
-
 from biobots2D.components.cell.cellfree import CellFree
 from biobots2D.components.node.node import Node
 from biobots2D.components.simulation.abstractcellsimulation import AbstractCellSimulation
-from biobots2D.utils.errors import TodoException
-from biobots2D.utils.polyshapes import nsidedpoly
-from biobots2D.utils.tools import pyout
+from utils.polyshapes import nsidedpoly
 
 
 class FreeCellSimulation(AbstractCellSimulation):
 
     def __init__(self):
         """
-        This uses free cells, i.e. cells that never share elements or nodes with other cells
+        This uses free cells, i.e. cells that never share elements or nodes with tutorials cells
         """
         self._dt = 0.005
         self._t = 0

@@ -7,7 +7,6 @@ from biobots2D.components.cell.celldb.epithelialcell import EpithelialCell
 from biobots2D.components.cell.celldb.foodcell import FoodCell
 from biobots2D.components.cell.celldb.heartcell import HeartCell
 from biobots2D.components.cell.celldb.sensorcell import SensorCell
-from biobots2D.components.central_memory.cpu_memory import CPUMemory
 from biobots2D.components.forces.cellbasedforce.ciliapropagationforce import CiliaPropagationForce
 from biobots2D.components.forces.cellbasedforce.freecellperimeternormalisingforce import \
     FreeCellPerimeterNormalisingForce
@@ -18,7 +17,7 @@ from biobots2D.components.informationprocessing.foodgradientsignal import FoodGr
 from biobots2D.components.node.node import Node
 from biobots2D.components.simulation.cuda_memory import CudaMemory
 from biobots2D.components.simulation.freecellsimulation import FreeCellSimulation
-from biobots2D.utils.polyshapes import nsidedpoly
+from utils.polyshapes import nsidedpoly
 
 
 class Gradient(FreeCellSimulation):

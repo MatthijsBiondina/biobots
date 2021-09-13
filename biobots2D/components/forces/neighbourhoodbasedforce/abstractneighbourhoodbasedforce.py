@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from biobots2D.utils.errors import TodoException
+from utils import TodoException
 
 
 class AbstractNeighbourhoodBasedForce(ABC):

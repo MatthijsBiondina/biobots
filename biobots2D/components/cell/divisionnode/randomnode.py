@@ -1,5 +1,5 @@
 from biobots2D.components.cell.divisionnode.abstractsplitnode import AbstractSplitNode
-from biobots2D.utils.errors import TodoException
+from utils import TodoException
 
 
 class RandomNode(AbstractSplitNode):

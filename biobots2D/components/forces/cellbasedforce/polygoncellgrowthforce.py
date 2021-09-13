@@ -186,7 +186,7 @@ class PolygonCellGrowthForce(AbstractCellBasedForce):
         Adhesion forces will be dealt separately.
 
         Practically, the force means for any given element, it's nodes will be pulled together.
-        In terms of the node, we will find a force pointing towards any other node that it shares
+        In terms of the node, we will find a force pointing towards any tutorials node that it shares
         an edge with.
 
         Technically this can be separated out as an AbstractElementBasedForce, but it is kept

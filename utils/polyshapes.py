@@ -1,12 +1,11 @@
-from abc import ABC
 from typing import Union
 
 import torch
 from numpy import pi
 from torch import cos, sin, Tensor
 
-from biobots2D.utils.errors import TodoException
-from biobots2D.utils.tools import pyout
+from utils.errors import TodoException
+from utils.tools import pyout
 
 
 class Polyshape:

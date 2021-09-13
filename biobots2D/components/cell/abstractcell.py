@@ -4,7 +4,7 @@ from typing import List
 from biobots2D.components.cell.cellcycle.abstractcellcyclemodel import AbstractCellCycleModel
 from biobots2D.components.cell.element import Element
 from biobots2D.components.node.node import Node
-from biobots2D.utils.errors import TodoException
+from utils import TodoException
 
 
 class AbstractCell(ABC):

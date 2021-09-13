@@ -1,10 +1,8 @@
 import numpy as np
-import torch
 from numpy import pi
 
 from biobots2D.components.cell.abstractcell import AbstractCell
 from biobots2D.components.cell.celldata.abstractcelldata import AbstractCellData
-from biobots2D.utils.errors import TodoException
 
 
 class TargetPerimeter(AbstractCellData):

@@ -1,11 +1,9 @@
-import numpy as np
 import torch
 from torch import tensor
 
 from biobots2D.components.simulation.abstractcellsimulation import AbstractCellSimulation
 from biobots2D.components.simulation.simulationdata.abstractsimulationdata import \
     AbstractSimulationData
-from biobots2D.utils.tools import pyout
 
 
 class SpatialState(AbstractSimulationData):

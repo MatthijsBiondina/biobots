@@ -30,9 +30,9 @@ from biobots2D.components.simulation.modifiers.abstractsimulationmodifier import
 from biobots2D.components.simulation.stopping.abstractstoppingcondition import \
     AbstractStoppingCondition
 from biobots2D.components.spacepartition import SpacePartition
-from biobots2D.utils.errors import TodoException
-from biobots2D.utils.plotting import Renderer
-from biobots2D.utils.tools import pyout, prng, poem
+from utils import TodoException
+from utils import Renderer
+from utils.tools import prng
 
 
 class AbstractCellSimulation(ABC):

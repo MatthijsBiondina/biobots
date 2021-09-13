@@ -1,8 +1,8 @@
 # import random
 from biobots2D.components.cell.abstractcell import AbstractCell
 from biobots2D.components.cell.cellcycle.abstractcellcyclemodel import AbstractCellCycleModel
-from biobots2D.utils.errors import TodoException
-from biobots2D.utils.tools import prng
+from utils import TodoException
+from utils.tools import prng
 
 
 class GrowthContactInhibition(AbstractCellCycleModel):

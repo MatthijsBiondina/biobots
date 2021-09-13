@@ -1,11 +1,8 @@
 import torch
-import cupy as cp
-from cupy import ndarray
 from torch import tensor
 
 from biobots2D.components.node.node import Node
-from biobots2D.utils.errors import TodoException
-from biobots2D.utils.tools import pyout
+from utils import TodoException
 
 
 class Element:
@@ -151,9 +148,9 @@ class Element:
 
     def get_other_cell(self, c):
         """
-        Since we don't know what order the cells are in, we need a special way to grab the other
+        Since we don't know what order the cells are in, we need a special way to grab the tutorials
         cell if we already know one of them. There will be two cases per simulation where there
-        is no other cell, so in these cases, return logical false
+        is no tutorials cell, so in these cases, return logical false
 
         :param c:
         :return:

@@ -1,5 +1,5 @@
 from biobots2D.components.cell.celldata.abstractcelldata import AbstractCellData
-from biobots2D.utils.errors import TodoException
+from utils import TodoException
 
 
 class CellCentre(AbstractCellData):

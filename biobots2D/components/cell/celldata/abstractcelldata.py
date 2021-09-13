@@ -1,8 +1,6 @@
 from abc import ABC, abstractmethod
 
 from biobots2D.components.cell.abstractcell import AbstractCell
-from biobots2D.utils.errors import TodoException
-from biobots2D.utils.tools import pyout
 
 
 class AbstractCellData(ABC):

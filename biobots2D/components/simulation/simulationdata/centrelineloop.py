@@ -1,5 +1,5 @@
 from biobots2D.components.simulation.simulationdata.abstractsimulationdata import AbstractSimulationData
-from biobots2D.utils.errors import TodoException
+from utils import TodoException
 
 
 class CentreLineLoop(AbstractSimulationData):

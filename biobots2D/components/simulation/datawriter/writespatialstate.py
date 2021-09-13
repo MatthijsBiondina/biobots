@@ -1,6 +1,5 @@
 from biobots2D.components.simulation.abstractcellsimulation import AbstractCellSimulation
 from biobots2D.components.simulation.datawriter.abstractdatawriter import AbstractDataWriter
-from biobots2D.utils.errors import TodoException
 
 
 class WriteSpatialState(AbstractDataWriter):

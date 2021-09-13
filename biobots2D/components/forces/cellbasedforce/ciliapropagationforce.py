@@ -1,9 +1,8 @@
 # import cupy as cp
 import numpy as cp
 from biobots2D.components.forces.cellbasedforce.abstractcellbasedforce import AbstractCellBasedForce
-from biobots2D.components.informationprocessing.foodgradientsignal import sigmoid
+
 from biobots2D.components.simulation.cuda_memory import CudaMemory
-from biobots2D.utils.tools import pyout
 
 
 class CiliaPropagationForce(AbstractCellBasedForce):

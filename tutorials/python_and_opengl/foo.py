@@ -4,13 +4,10 @@ from numpy import sqrt
 
 import numpy as np
 import pygame
-from matplotlib import cm
 from pygame.locals import *
 
 from OpenGL.GL import *
 from OpenGL.GLU import *
-
-from biobots2D.utils.tools import pyout
 
 import os
 
@@ -88,6 +85,7 @@ def Cube():
         light = np.array([2, 3, 1])
         light = light / sqrt(np.sum(light ** 2))
 
+        frontwardness = np.dot(axb, light)  # see how much it points
         frontwardness = np.dot(axb, light)  # see how much it points
         # forwards
         c = cmap(frontwardness)

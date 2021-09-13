@@ -5,14 +5,10 @@ from typing import List, Union
 import cupy as cp
 # from numba import cuda, float32, vectorize, guvectorize, int64
 import numpy as np
-from numba.cuda.cudadrv.devicearray import DeviceNDArray as DNDA
 
 from biobots2D.components.cell.abstractcell import AbstractCell
 from biobots2D.components.cell.element import Element
-from biobots2D.components.cudaspacepartition import CudaSpacePartition
 from biobots2D.components.node.node import Node
-from biobots2D.components.spacepartition import SpacePartition
-from biobots2D.utils.tools import pyout
 
 
 def list2cupy(lst: List, property_: Union[None, str] = None):

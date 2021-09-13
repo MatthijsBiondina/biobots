@@ -8,16 +8,14 @@ from biobots2D.components.forces.cellbasedforce.polygoncellgrowthforce import Po
 from biobots2D.components.forces.neighbourhoodbasedforce.cellcellinteractionforce import \
     CellCellInteractionForce
 from biobots2D.components.simulation.cuda_memory import CudaMemory
-from biobots2D.components.simulation.datawriter.writespatialstate import WriteSpatialState
 from biobots2D.components.simulation.freecellsimulation import FreeCellSimulation
 from biobots2D.components.simulation.simulationdata.spatialstate import SpatialState
 from biobots2D.components.spacepartition import SpacePartition
-from biobots2D.utils.tools import pyout
 
 
 class Spheroid(FreeCellSimulation):
     """
-    This uses free cells, i.e. cells that never share elements or nodes with other cells
+    This uses free cells, i.e. cells that never share elements or nodes with tutorials cells
     """
 
     def __init__(self, t0: float = 10, tg: float = 10, s: float = 10, sreg: float = 5,

@@ -1,6 +1,4 @@
-from biobots2D.components.spacepartition import SpacePartition
-from biobots2D.utils.errors import TodoException
-from biobots2D.utils.tools import pyout
+from utils import TodoException
 import cupy as cp
 
 class CudaSpacePartition:

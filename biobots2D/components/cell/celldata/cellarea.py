@@ -2,8 +2,7 @@ import torch
 
 from biobots2D.components.cell.abstractcell import AbstractCell
 from biobots2D.components.cell.celldata.abstractcelldata import AbstractCellData
-from biobots2D.utils.errors import TodoException
-from biobots2D.utils.polyshapes import polyarea
+from utils.polyshapes import polyarea
 
 
 class CellArea(AbstractCellData):

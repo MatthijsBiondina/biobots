@@ -3,8 +3,7 @@ import os
 import shutil
 from abc import abstractmethod, ABC
 
-from biobots2D.utils.errors import TodoException
-from biobots2D.utils.tools import pyout
+from utils import TodoException
 
 
 class AbstractDataWriter(ABC):
@@ -12,7 +11,7 @@ class AbstractDataWriter(ABC):
     This class sets out the required functions for writing data to file
 
     This will usually be used for something like storing the spatial positions of the nodes etc
-    for later visualisation. In other words it is designed for use when each time step will
+    for later visualisation. In tutorials words it is designed for use when each time step will
     produce a lot of data, rather than just a handful of values.
     """
 

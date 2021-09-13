@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List
 
 import numpy as np
 from numpy import pi
@@ -7,7 +7,6 @@ from biobots2D.components.cell.abstractcell import AbstractCell
 from biobots2D.components.cell.element import Element
 from biobots2D.components.node.node import Node
 from biobots2D.components.simulation.cuda_memory import CudaMemory
-from biobots2D.utils.tools import pyout
 
 
 def dot(A: np.ndarray, B: np.ndarray) -> np.ndarray:

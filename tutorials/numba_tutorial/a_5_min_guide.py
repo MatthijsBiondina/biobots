@@ -1,7 +1,7 @@
 import numpy as np
 from numba import cuda
 
-from biobots2D.utils.tools import pyout
+from utils.tools import pyout
 
 x = np.arange(10)
 d_x = cuda.to_device(x)

@@ -2,9 +2,7 @@ from typing import Union
 
 import torch
 
-from biobots2D.utils.config import Config
-from biobots2D.utils.errors import TodoException
-from biobots2D.utils.tools import pyout
+from utils import Config
 
 
 class ColourSet:

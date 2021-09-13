@@ -4,7 +4,7 @@ import numba
 import numpy as np
 from numba import cuda
 
-from biobots2D.utils.tools import pyout
+from utils.tools import pyout
 
 
 def cpu_histogram(x, xmin, xmax, histogram_out):

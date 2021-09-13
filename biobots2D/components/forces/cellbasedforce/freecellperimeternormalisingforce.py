@@ -1,14 +1,10 @@
-import sys
-import time
 from typing import List
 
 import numpy as cp
 # import cupy as cp
 from biobots2D.components.cell.abstractcell import AbstractCell
 from biobots2D.components.forces.cellbasedforce.abstractcellbasedforce import AbstractCellBasedForce
-from biobots2D.components.simulation.cuda_memory import CudaMemory, synchronize
-from biobots2D.utils.errors import TodoException
-from biobots2D.utils.tools import pyout
+from biobots2D.components.simulation.cuda_memory import CudaMemory
 
 
 class FreeCellPerimeterNormalisingForce(AbstractCellBasedForce):

@@ -7,7 +7,7 @@ from biobots2D.components.cell.celldata.targetperimeter import TargetPerimeter
 from biobots2D.components.cell.divisionnode.abstractsplitnode import AbstractSplitNode
 from biobots2D.components.cell.divisionnode.randomnode import RandomNode
 from biobots2D.components.cell.element import Element
-from biobots2D.utils.errors import TodoException
+from utils import TodoException
 
 
 class CellFree(AbstractCell):
@@ -165,7 +165,7 @@ class CellFree(AbstractCell):
     def get_split_node(self):
         """
         Using something that defines the division axis, chose a node to start the split from.
-        The other side will be on the opposite side of the cell and could be an element or a
+        The tutorials side will be on the opposite side of the cell and could be an element or a
         node, depending on even or oddness of the node count
         :return:
         """

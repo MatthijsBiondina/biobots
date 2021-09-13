@@ -1,10 +1,9 @@
 import os
 import traceback
-from typing import Union
 
 from tqdm import tqdm
 
-from biobots2D.utils.config import Config
+from utils.config import Config
 
 bcolors = {'PINK': '\033[95m',
            'BLUE': '\033[94m',

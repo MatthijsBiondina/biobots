@@ -1,8 +1,5 @@
-from numpy import pi
-
 from biobots2D.components.informationprocessing.abstractsignal import AbstractSignal
 from biobots2D.components.simulation.cuda_memory import CudaMemory
-from biobots2D.utils.tools import pyout
 import cupy as cp
 
 

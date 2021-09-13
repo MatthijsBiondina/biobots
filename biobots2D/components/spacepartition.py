@@ -1,16 +1,14 @@
 from math import floor
-from typing import List, Tuple
+from typing import List
 
-import numpy as np
 import torch
 from torch import Tensor, tensor
 
 from biobots2D.components.cell.element import Element
 from biobots2D.components.node.node import Node
-from biobots2D.utils.cantrips import as_numpy
-from biobots2D.utils.errors import TodoException
-from biobots2D.utils.polyshapes import inpolygon
-from biobots2D.utils.tools import pyout
+from utils import TodoException
+from utils.polyshapes import inpolygon
+from utils.tools import pyout
 
 
 class SpacePartition:
@@ -466,7 +464,7 @@ class SpacePartition:
         """
         This function will be used as each node is moved As such, we know the node n1 has _just_
         moved therefore we need to look at the current position and the previous position to see
-        which boxes need changing. We know nothing about the other nodes of the elements so at
+        which boxes need changing. We know nothing about the tutorials nodes of the elements so at
         this point we just assume they are in their final position. This will cause doubling up
         of effort if both nodes end up moving to a new box, but this should be fairly rare
         occurrance.
@@ -591,7 +589,7 @@ class SpacePartition:
     def remove_element_from_box(self, q, i, j, e):
         """
         If it gets to this point, the elemet should be in the given box. If it's not, could be a
-        sign of other problems but the simulation can continue
+        sign of tutorials problems but the simulation can continue
         :param q:
         :param i:
         :param j:

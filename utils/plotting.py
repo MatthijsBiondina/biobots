@@ -1,21 +1,13 @@
 import atexit
 import sys
-import time
-from typing import List
 
 import cupy as cp
 import cv2
-import numba
 import numpy as np
-from numba import cuda, vectorize
-from numba.cuda import grid
 
-from biobots2D.components.cell.abstractcell import AbstractCell
-from biobots2D.components.simulation.cuda_memory import CudaMemory, synchronize
-from biobots2D.utils.tools import pyout
+from biobots2D.components.simulation.cuda_memory import CudaMemory
 import pygame
 from pygame.locals import *
-from pygame import gfxdraw
 
 
 class Renderer:
