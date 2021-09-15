@@ -82,7 +82,7 @@ class AbstractNodeElementForce(AbstractNeighbourhoodBasedForce, ABC):
         rDtoAb = torch.stack((torch.dot(rDtoA, v), torch.dot(rDtoA, u)), dim=0)
 
         # The moment is technically rDtoAby * Fabx - rDtoAbx * Faby but by definition, the y-axis
-        # aligns with the element, so all x components are 0
+        # aligns with the element, so all x cells are 0
         # todo: the above statement changes when friction between cells comes into play
         M = -rDtoAb[1] * Fab[0]
 

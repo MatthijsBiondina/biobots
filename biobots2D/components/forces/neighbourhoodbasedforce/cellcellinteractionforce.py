@@ -318,7 +318,7 @@ class CellCellInteractionForce(AbstractNodeElementForce):
         rDtoAb = cp.stack((cp.sum(rDtoA * v, axis=1), cp.sum(rDtoA * u, axis=1)), axis=1)
 
         # The moment is technically rDtoAby * Fabx - rDtoAbx * Faby but by definition, the y-axis
-        # aligns with the element, so all x components are 0
+        # aligns with the element, so all x cells are 0
         # todo: the above statement changes when friction between cells comes into play
         M = -rDtoAb[:, 1] * Fab[:, 0]
 

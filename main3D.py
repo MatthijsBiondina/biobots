@@ -1,4 +1,4 @@
-from biobots3D.simulation.single_cell import SingleCell3D
+from biobots3D.simulation.singlecellsimulation3d import SingleCellSimulation3D
 
-sim = SingleCell3D()
+sim = SingleCellSimulation3D()
 sim.animate(1000, 1)

@@ -20,7 +20,7 @@ class AbstractTissueLevelCellKiller(ABC):
 
     def erase_cell_form_simulation(self, c):
         """
-        Does all the garbage collecting to get rid of all the unnecessary components
+        Does all the garbage collecting to get rid of all the unnecessary cells
 
         :param c:
         :return:

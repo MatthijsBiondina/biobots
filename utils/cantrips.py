@@ -52,7 +52,6 @@ def cuda2numpy(loc, ignore_key='gpu', depth=0):
             except AttributeError:
                 pass
 
-
     retval = {}
     for key in sorted(ou):
         if key == ignore_key:
@@ -62,6 +61,7 @@ def cuda2numpy(loc, ignore_key='gpu', depth=0):
                 continue
         retval[key] = ou[key]
     return retval
+
 
 def cupy_shapes(loc):
     ou = {}
