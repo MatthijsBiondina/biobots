@@ -6,13 +6,12 @@ from utils.tools import pyout
 
 class FreeCellBot(AbstractBot3D):
 
-
-
     def __init__(self):
         super(FreeCellBot, self).__init__()
 
     def construct(self, **kwargs):
         self.add_cell(EpithelialCell3D(), (0, 0, 0))
+        self.add_cell(EpithelialCell3D(), (2, 0, 0))
 
     def connect_cells(self, **kwargs):
         pass
