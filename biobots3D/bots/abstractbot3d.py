@@ -98,7 +98,8 @@ class AbstractBot3D(ABC):
                 c.surf_n_1[c.surf_n_1 == key] = val
                 c.surf_n_2[c.surf_n_2 == key] = val
 
-    def add_cell(self, cell: AbstractCell3D, pos: Tuple[int, int, int]):
+    def add_cell(self, cell: AbstractCell3D):
+        pos = cell.pos
         if len(pos) != 3:
             raise ValueError(f"pos should be 3D coordinates, not {pos}")
         if not (isinstance(xyz, int) for xyz in pos):

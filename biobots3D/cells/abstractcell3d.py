@@ -1,3 +1,4 @@
+import os
 from abc import ABC
 
 import numpy as np
@@ -18,15 +19,17 @@ class AbstractCell3D(ABC):
         :param pos: gridpos
         :param face:
         """
-        super(AbstractCell3D, self).__init__()
 
+        super(AbstractCell3D, self).__init__()
+        self.pos = pos
         self.id = None
 
         self.node_pos = np.copy(tetrakaidecahedron.nodes)
-        if pos[0] % 2 == 0:  # on even gridpoint rotate pi/4
+        if True:  # pos[0] % 2 == 0:  # on even gridpoint rotate pi/4
             R = np.quaternion(np.cos(pi / 8), 0, np.sin(pi / 8), 0)
             self.node_pos = quaternion.rotate_vectors(R, self.node_pos)
-        self.node_pos += np.array(pos) * sqrt(3)
+
+        self.node_pos += np.array(pos) * sqrt(2)
         self.node_ids = np.arange(self.node_pos.shape[0])
 
         self.edge_n_0 = np.copy(tetrakaidecahedron.edges)[:, 0]
@@ -37,7 +40,3 @@ class AbstractCell3D(ABC):
         self.surf_n_1 = np.copy(tetrakaidecahedron.surfaces)[:, 1]
         self.surf_n_2 = np.copy(tetrakaidecahedron.surfaces)[:, 2]
         self.surf_ids = np.arange(self.surf_n_0.shape[0])
-
-    @property
-    def pos(self):
-        return np.mean(self.node_pos, axis=0)

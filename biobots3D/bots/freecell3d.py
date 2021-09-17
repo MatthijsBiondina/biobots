@@ -10,8 +10,13 @@ class FreeCellBot(AbstractBot3D):
         super(FreeCellBot, self).__init__()
 
     def construct(self, **kwargs):
-        self.add_cell(EpithelialCell3D(), (0, 0, 0))
-        self.add_cell(EpithelialCell3D(), (2, 0, 0))
+        self.add_cell(EpithelialCell3D(pos=(0, 0, 0)))
+        self.add_cell(EpithelialCell3D(pos=(2, 0, 0)))
+        self.add_cell(EpithelialCell3D(pos=(0, 0, 2)))
+        self.add_cell(EpithelialCell3D(pos=(2, 0, 2)))
+        self.add_cell(EpithelialCell3D(pos=(1, 1, 1)))
+        self.add_cell(EpithelialCell3D(pos=(1, -1, 1)))
+
 
     def connect_cells(self, **kwargs):
         pass
