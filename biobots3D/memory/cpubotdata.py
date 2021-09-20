@@ -7,6 +7,7 @@ class BBotDataCPU:
     def __init__(self):
         self.cell_ids = np.empty(0)  # (#cells,)
         self.cell_2_N: List[object] = []  # (#cells, #nodes)
+        self.cell_2_S: List[object] = []  # (#cells, #surfs)
 
         self.node_ids = np.empty(0)  # (#nodes,)
         self.node_pos = np.empty(0)  # (#nodes, 3)

@@ -124,6 +124,7 @@ class AbstractBot3D(ABC):
 
         D.node_ids = np.arange(nr_of_nodes)
         D.cell_2_N = [np.empty(0)] * nr_of_cells
+        D.cell_2_S = [np.empty(0)] * nr_of_cells
         D.node_pos = np.empty((nr_of_nodes, 3))
         D.edge_ids = np.arange(nr_of_edges)
         D.edge_n_0 = np.empty(nr_of_edges, dtype=int64)
@@ -155,6 +156,12 @@ class AbstractBot3D(ABC):
                 D.surf_n_0[central_ii] = c.surf_n_0[s_ii]
                 D.surf_n_1[central_ii] = c.surf_n_1[s_ii]
                 D.surf_n_2[central_ii] = c.surf_n_2[s_ii]
+
+                try:
+                    D.cell_2_S[c_ii][s_ii] = id_
+                except IndexError:
+                    D.cell_2_S[c_ii] = np.full(c.surf_ids.size, id_)
+
         del c_ii
 
         del self.cells

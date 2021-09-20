@@ -92,6 +92,7 @@ class AbstractSimulation3D(ABC):
         B_2_C = [np.empty(0)] * nr_of_bbots
         C_ids = np.arange(nr_of_cells)
         C_2_N = [np.empty(0)] * nr_of_cells
+        C_2_S = [np.empty(0)] * nr_of_cells
         N_ids = np.arange(nr_of_nodes)
         N_pos = np.empty((nr_of_nodes, 3))
         E_ids = np.arange(nr_of_edges)
@@ -110,6 +111,7 @@ class AbstractSimulation3D(ABC):
             for cii, c_id in enumerate(b.cell_ids):
                 gpuii = np.argwhere(C_ids == c_id).squeeze(0)
                 C_2_N[gpuii.squeeze(0)] = b.cell_2_N[cii]
+                C_2_S[gpuii.squeeze(0)] = b.cell_2_S[cii]
                 try:
                     B_2_C[bii][cii] = c_id
                 except IndexError:
@@ -139,7 +141,8 @@ class AbstractSimulation3D(ABC):
 
         self.gpu.B_2_C = cp.array(B_2_C)
         self.gpu.B_ids = cp.array(B_ids)
-        self.gpu.C_2_N = cp.array(C_2_N)
+        self.gpu.C_2_N = [cp.array(c2n) for c2n in C_2_N]
+        self.gpu.C_2_S = [cp.array(c2s) for c2s in C_2_S]
         self.gpu.C_ids = cp.array(C_ids)
         self.gpu.E_ids = cp.array(E_ids)
         self.gpu.E_n_0 = cp.array(E_n_0)
@@ -150,5 +153,7 @@ class AbstractSimulation3D(ABC):
         self.gpu.S_n_0 = cp.array(S_n_0)
         self.gpu.S_n_1 = cp.array(S_n_1)
         self.gpu.S_n_2 = cp.array(S_n_2)
+
+        self.gpu.reset_dynamic_variables()
 
 
