@@ -32,20 +32,6 @@ class AbstractBot3D(ABC):
     def connect_cells(self, **kwargs):
         raise NotImplementedError
 
-    # @property
-    # def pos(self):
-    #     """
-    #     Two methods depending on whether central cpu data has been gathered
-    #
-    #     Note that methods will return slightly different values, since merged nodes are counted
-    #     twice in the first method
-    #     :return:
-    #     """
-    #     try:
-    #         return np.mean(np.array([c.pos for _, c in self.cells.items()]), axis=0)
-    #     except AttributeError:
-    #         return np.mean(self.cpu.node_pos, axis=0)
-
     def __give_components_unique_ids(self):
         """
         make sure every cell has a different id and each node, edge, and surface in each cell
@@ -121,7 +107,7 @@ class AbstractBot3D(ABC):
         nr_of_surfs = max([np.max(c.surf_ids) for _, c in self.cells.items()]) + 1
 
         D.cell_ids = np.arange(nr_of_cells)
-
+        D.cell_v_0 = np.empty(nr_of_cells)
         D.node_ids = np.arange(nr_of_nodes)
         D.cell_2_N = [np.empty(0)] * nr_of_cells
         D.cell_2_S = [np.empty(0)] * nr_of_cells
@@ -133,10 +119,13 @@ class AbstractBot3D(ABC):
         D.surf_n_0 = np.empty(nr_of_surfs, dtype=int64)
         D.surf_n_1 = np.empty(nr_of_surfs, dtype=int64)
         D.surf_n_2 = np.empty(nr_of_surfs, dtype=int64)
+        D.surf_2_C = np.empty(nr_of_surfs, dtype=int64)
 
         del nr_of_nodes, nr_of_cells, nr_of_edges, nr_of_surfs
 
         for c_ii, (_, c) in enumerate(self.cells.items()):
+            D.cell_v_0[c_ii] = c.target_volume
+
             for n_ii, id_ in enumerate(c.node_ids):
                 D.node_pos[D.node_ids == id_] = c.node_pos[n_ii]
                 try:

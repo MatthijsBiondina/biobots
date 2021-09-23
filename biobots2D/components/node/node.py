@@ -5,7 +5,7 @@ import torch
 from torch import Tensor
 
 from biobots2D.components.node.nodedata.elementneighbours import ElementNeighbours
-from utils import TodoException
+from utils.errors import TodoException
 
 
 class Node:

@@ -2,7 +2,7 @@ import torch
 from torch import tensor
 
 from biobots2D.components.node.node import Node
-from utils import TodoException
+from utils.errors import TodoException
 
 
 class Element:

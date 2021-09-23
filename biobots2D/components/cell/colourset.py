@@ -2,7 +2,8 @@ from typing import Union
 
 import torch
 
-from utils import Config
+# from utils import Config
+from utils.config import Config
 
 
 class ColourSet:

@@ -8,7 +8,8 @@ from biobots2D.components.forces.neighbourhoodbasedforce.abstractnodeelementforc
 from biobots2D.components.node.node import Node
 from biobots2D.components.simulation.cuda_memory import CudaMemory
 from biobots2D.components.spacepartition import SpacePartition
-from utils import TodoException
+from utils.errors import TodoException
+
 from utils.tools import pyout
 
 

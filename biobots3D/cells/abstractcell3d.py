@@ -40,3 +40,5 @@ class AbstractCell3D(ABC):
         self.surf_n_1 = np.copy(tetrakaidecahedron.surfaces)[:, 1]
         self.surf_n_2 = np.copy(tetrakaidecahedron.surfaces)[:, 2]
         self.surf_ids = np.arange(self.surf_n_0.shape[0])
+
+        self.target_volume: float = 0

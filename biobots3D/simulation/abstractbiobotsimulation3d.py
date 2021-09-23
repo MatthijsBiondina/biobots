@@ -16,7 +16,7 @@ class AbstractBiobotSimulation3D(AbstractSimulation3D):
         self.physics_engine = PhysicsEngine3D(self.gpu)
         self.graphics_engine = None if mode is None else GraphicsEngine3D(self.gpu, mode, fname)
 
-    def animate(self, steps=360, d_step=1):
+    def animate(self, steps=3600, d_step=1):
         for step in tqdm(range(steps)):
             self.next_time_step()
 

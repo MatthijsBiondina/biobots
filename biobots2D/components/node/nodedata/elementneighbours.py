@@ -1,5 +1,5 @@
 from biobots2D.components.node.nodedata.abstractnodedata import AbstractNodeData
-from utils import TodoException
+from utils.errors import TodoException
 
 
 class ElementNeighbours(AbstractNodeData):

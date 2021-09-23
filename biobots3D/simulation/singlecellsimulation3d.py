@@ -14,3 +14,4 @@ class SingleCellSimulation3D(AbstractBiobotSimulation3D):
 
     def load_simulation_objects(self, *args):
         self.add_biobot(FreeCellBot())
+        # self.add_biobot(FreeCellBot(), pos=np.array((5, 0, 0)))

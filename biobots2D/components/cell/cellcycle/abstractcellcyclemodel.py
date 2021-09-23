@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from biobots2D.components.cell.colourset import ColourSet
-from utils import TodoException
+from utils.errors import TodoException
 
 
 class AbstractCellCycleModel(ABC):

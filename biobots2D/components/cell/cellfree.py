@@ -7,7 +7,7 @@ from biobots2D.components.cell.celldata.targetperimeter import TargetPerimeter
 from biobots2D.components.cell.divisionnode.abstractsplitnode import AbstractSplitNode
 from biobots2D.components.cell.divisionnode.randomnode import RandomNode
 from biobots2D.components.cell.element import Element
-from utils import TodoException
+from utils.errors import TodoException
 
 
 class CellFree(AbstractCell):

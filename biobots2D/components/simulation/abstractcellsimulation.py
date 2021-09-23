@@ -30,8 +30,9 @@ from biobots2D.components.simulation.modifiers.abstractsimulationmodifier import
 from biobots2D.components.simulation.stopping.abstractstoppingcondition import \
     AbstractStoppingCondition
 from biobots2D.components.spacepartition import SpacePartition
-from utils import TodoException
-from utils import Renderer
+from utils.errors import TodoException
+from utils.plotting import Renderer
+
 from utils.tools import prng
 
 

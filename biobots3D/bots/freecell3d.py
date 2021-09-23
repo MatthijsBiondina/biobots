@@ -14,10 +14,10 @@ class FreeCellBot(AbstractBot3D):
         super(FreeCellBot, self).__init__()
 
     def construct(self, **kwargs):
-        nr_of_cells = 60
+        nr_of_cells = 1
         n = 0
 
-        pbar = tqdm(total=nr_of_cells, leave=False)
+        # pbar = tqdm(total=nr_of_cells, leave=False)
         try:
             for y in range(sys.maxsize):
                 if y % 2 == 0:
@@ -25,7 +25,7 @@ class FreeCellBot(AbstractBot3D):
                         for z in [-2, 0, 2]:
                             self.add_cell(EpithelialCell3D(pos=(x, y, z)))
                             n += 1
-                            pbar.update(1)
+                            # pbar.update(1)
                             if n >= nr_of_cells:
                                 raise Exception
 
@@ -34,7 +34,7 @@ class FreeCellBot(AbstractBot3D):
                         for z in [-1, 1]:
                             self.add_cell(EpithelialCell3D(pos=(x, y, z)))
                             n += 1
-                            pbar.update(1)
+                            # pbar.update(1)
                             if n >= nr_of_cells:
                                 raise Exception
         except Exception:

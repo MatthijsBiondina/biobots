@@ -74,7 +74,7 @@ class GraphicsEngine3D:
     def render_opengl(self):
         self.__controls()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        glRotatef(1, 0, 1, 0)
+        # glRotatef(1, 0, 1, 0)
 
         v0 = self.gpu.N_pos[self.gpu.S_n_1] - self.gpu.N_pos[self.gpu.S_n_0]
         v1 = self.gpu.N_pos[self.gpu.S_n_2] - self.gpu.N_pos[self.gpu.S_n_0]

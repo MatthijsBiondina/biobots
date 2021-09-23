@@ -6,7 +6,8 @@ from torch import Tensor, tensor
 
 from biobots2D.components.cell.element import Element
 from biobots2D.components.node.node import Node
-from utils import TodoException
+from utils.errors import TodoException
+
 from utils.polyshapes import inpolygon
 from utils.tools import pyout
 

@@ -2,19 +2,9 @@ import sys
 from timeit import timeit
 
 from biobots3D.memory.gpusimdata import SimulationDataGPU
+from biobots3D.simulation.parameters import AREA_ENERGY_PARAMETER
 from utils.tools import pyout
 import cupy as cp
-
-
-# @cp.fuse
-def cross_product(n0: cp.ndarray, n1: cp.ndarray, n2: cp.ndarray, ou: cp.ndarray):
-    a = n1 - n0
-    b = n2 - n0
-
-    ou = cp.cross(a, b)
-    # ou[:, 0] = a[:, 1] * b[:, 2] - a[:, 2] * b[:, 1]
-    # ou[:, 1] = a[:, 2] * b[:, 0] - a[:, 0] * b[:, 2]
-    # ou[:, 2] = a[:, 0] * b[:, 1] - a[:, 1] * b[:, 0]
 
 
 def target_volume_forces(gpu: SimulationDataGPU):
@@ -54,18 +44,12 @@ def target_volume_forces(gpu: SimulationDataGPU):
     """
 
     # determine current volume
-    N_0 = gpu.N_pos[gpu.S_n_0]
-    N_1 = gpu.N_pos[gpu.S_n_1]
-    N_2 = gpu.N_pos[gpu.S_n_2]
-    crp = gpu.S_crp
+    current_volume = gpu.C_vol
+    target_volume = gpu.C_v_0
 
-    N = 10
-    pyout(timeit(lambda: cross_product(N_0, N_1, N_2, crp), number=N) / N)
+    magnitude = AREA_ENERGY_PARAMETER * (current_volume - target_volume)
 
-    sys.exit(0)
-    # E_01 = N_1 - N_0
-    # E_02 = N_2 - N_0
-    #
-    # A = cp.linalg.norm(cp.cross(E_01, E_02), axis=1) / 2
+    for ii, id_n1, id_n2 in gpu.neighbouring_surface_nodes_masks:
+        v = cp.sum(cp.cross(gpu.N_pos[id_n1], gpu.N_pos[id_n2]), axis=1) / 6
 
-    pyout()
+        gpu.N_for[ii] += -v * magnitude

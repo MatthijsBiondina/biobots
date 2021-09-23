@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from utils import TodoException
+from utils.errors import TodoException
 
 
 class AbstractTissueLevelCellKiller(ABC):
